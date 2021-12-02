@@ -1,20 +1,20 @@
 
 #include "test.h"
 
-extern inline test_item *item_init(const char *name, test_status (*fn)(void));
+extern inline test_item *test_item_init(const char *name, test_status (*fn)(void));
 
-extern inline void item_free(test_item *ti);
+extern inline void test_item_free(test_item *ti);
 
-extern inline test_queue *queue_init(void);
+extern inline test_queue *test_queue_init(void);
 
-extern inline void queue_add(test_queue *tq, test_item *ti);
+extern inline void test_queue_add(test_queue *tq, test_item *ti);
 
-extern inline void queue_free(test_queue *tq);
+extern inline void test_queue_free(test_queue *tq);
 
 extern const char *_register_tests(test_queue *tq);
 
 int main(void) {
-    test_queue *tq = queue_init();
+    test_queue *tq = test_queue_init();
     const char *test_file = _register_tests(tq);
     printf("\e[1;97mTESTING:\e[0m %s\n", test_file);
     test_item *head = tq->head;
@@ -40,6 +40,6 @@ int main(void) {
     if (tq->failed > 0 && tq->invalid > 0) ret = 1;
     else if (tq->failed > 0) ret = 2;
     else if (tq->invalid > 0) ret = 3;
-    queue_free(tq);
+    test_queue_free(tq);
     return ret;
 }
