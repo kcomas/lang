@@ -13,7 +13,6 @@ typedef enum {
 } test_status;
 
 typedef struct _test_item {
-    test_status status;
     const char *name;
     test_status (*fn)(void);
     struct _test_item *next;
