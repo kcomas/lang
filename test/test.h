@@ -7,9 +7,9 @@
 #define TEST_STATUS_PFX(NAME) TEST_STATUS_##NAME
 
 typedef enum {
-    TEST_STATUS_PFX(WAIT),
     TEST_STATUS_PFX(PASS),
-    TEST_STATUS_PFX(FAIL)
+    TEST_STATUS_PFX(FAIL),
+    TEST_STATUS_PFX(INVALID)
 } test_status;
 
 typedef struct _test_item {
@@ -63,7 +63,7 @@ inline void test_queue_free(test_queue *tq) {
 
 #define TEST_FAIL() return TEST_STATUS_PFX(FAIL)
 
-#define TEST_INVALID() return TEST_STATUS_PFX(WAIT)
+#define TEST_INVALID() return TEST_STATUS_PFX(INVALID)
 
 #define TEST(NAME) test_status NAME(void)
 
