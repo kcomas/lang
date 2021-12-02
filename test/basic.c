@@ -2,7 +2,7 @@
 #include "test.h"
 
 TEST(basic_pass) {
-    TEST_PASS();
+    // passes by default
 }
 
 TEST(basic_fail) {

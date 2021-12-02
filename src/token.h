@@ -19,15 +19,21 @@ typedef struct {
     size_t line_no, char_no, pos, len;
 } token;
 
-#define TOKEN_STATE_PFX(NAME) TOKEN_STATE_##NAME
+#define TOKEN_STATUS_PFX(NAME) TOKEN_STATE_##NAME
 
 typedef enum {
-
-    TOKEN_STATE_PFX(_LEN)
-} token_state_type;
+    TOKEN_STATUS_PFX(OK)
+} token_status_type;
 
 typedef struct {
-    token_state_type state;
-    size_t file_len, line_no, char_no, pos;
-    char *file_str;
+    token_status status;
+    size_t len, line_no, char_no, pos;
+    char *str;
 } token_state;
+
+inline token_state *token_state_init(size_t len, char *str) {
+    token_state *ts = calloc(1, sizeof(token_state));
+    ts->len = len;
+    ts->str = str;
+    return ts;
+}

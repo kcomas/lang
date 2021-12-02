@@ -6,19 +6,18 @@
 
 #define TEST_STATUS_PFX(NAME) TEST_STATUS_##NAME
 
-typedef enum {
-    TEST_STATUS_PFX(PASS),
-    TEST_STATUS_PFX(FAIL),
-    TEST_STATUS_PFX(INVALID)
-} test_status;
-
 typedef struct _test_item {
+    enum {
+        TEST_STATUS_PFX(PASS),
+        TEST_STATUS_PFX(FAIL),
+        TEST_STATUS_PFX(INVALID)
+    } status;
     const char *name;
-    test_status (*fn)(void);
+    void (*fn)(struct _test_item*); // self
     struct _test_item *next;
 } test_item;
 
-inline test_item *test_item_init(const char *name, test_status (*fn)(void)) {
+inline test_item *test_item_init(const char *name, void (*fn)(test_item*)) {
     test_item *ti = calloc(1, sizeof(test_item));
     ti->name = name;
     ti->fn = fn;
@@ -59,13 +58,16 @@ inline void test_queue_free(test_queue *tq) {
     free(tq);
 }
 
-#define TEST_PASS() return TEST_STATUS_PFX(PASS)
+#define _TEST_END(STATUS) do { \
+    ti->status = TEST_STATUS_PFX(STATUS); \
+    return; \
+} while(0)
 
-#define TEST_FAIL() return TEST_STATUS_PFX(FAIL)
+#define TEST_FAIL() _TEST_END(FAIL)
 
-#define TEST_INVALID() return TEST_STATUS_PFX(INVALID)
+#define TEST_INVALID() _TEST_END(INVALID)
 
-#define TEST(NAME) test_status NAME(void)
+#define TEST(NAME) void NAME(__attribute__((unused)) test_item *ti)
 
 #define ADD_TEST(NAME) test_queue_add(tq, test_item_init(#NAME, NAME))
 

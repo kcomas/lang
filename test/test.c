@@ -1,7 +1,7 @@
 
 #include "test.h"
 
-extern inline test_item *test_item_init(const char *name, test_status (*fn)(void));
+extern inline test_item *test_item_init(const char *name, void (*fn)(test_item*));
 
 extern inline void test_item_free(test_item *ti);
 
@@ -20,11 +20,11 @@ int main(void) {
     test_item *head = tq->head;
     while (head != NULL) {
         printf("\e[1;97mRUNNING:\e[0m %s ", head->name);
-        test_status status = head->fn();
-        if (status == TEST_STATUS_PFX(PASS)) {
+        head->fn(head);
+        if (head->status == TEST_STATUS_PFX(PASS)) {
             tq->passed++;
             printf("\e[1;32mPASSED\e[0m\n");
-        } else if (status == TEST_STATUS_PFX(FAIL)) {
+        } else if (head->status == TEST_STATUS_PFX(FAIL)) {
             tq->failed++;
             printf("\e[1;31mFAILED\e[0m\n");
         } else {
