@@ -13,7 +13,7 @@ typedef struct _test_item {
         TEST_STATUS_PFX(INVALID)
     } status;
     const char *name;
-    void (*fn)(struct _test_item*); // self
+    void (*fn)(struct _test_item*); // current test passed in
     struct _test_item *next;
 } test_item;
 
@@ -58,20 +58,20 @@ inline void test_queue_free(test_queue *tq) {
     free(tq);
 }
 
-#define _TEST_END(STATUS) do { \
+#define TEST_END(STATUS) do { \
     ti->status = TEST_STATUS_PFX(STATUS); \
     return; \
 } while(0)
 
-#define TEST_FAIL() _TEST_END(FAIL)
+#define TEST_FAIL() TEST_END(FAIL)
 
-#define TEST_INVALID() _TEST_END(INVALID)
+#define TEST_INVALID() TEST_END(INVALID)
 
 #define TEST(NAME) void NAME(__attribute__((unused)) test_item *ti)
 
 #define ADD_TEST(NAME) test_queue_add(tq, test_item_init(#NAME, NAME))
 
-#define INIT_TESTS(BODY) const char *_register_tests(test_queue *tq) { \
+#define INIT_TESTS(BODY) const char *register_tests(test_queue *tq) { \
     BODY \
     return __FILE__; \
 }

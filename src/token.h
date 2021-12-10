@@ -2,8 +2,6 @@
 #pragma once
 
 #include <stdlib.h>
-#include <fcntl.h>
-#include <errno.h>
 
 #define TOKEN_PFX(NAME) TOKEN_##NAME
 
@@ -23,12 +21,12 @@ typedef struct {
 
 typedef enum {
     TOKEN_STATUS_PFX(OK)
-} token_status_type;
+} token_status;
 
 typedef struct {
     token_status status;
     size_t len, line_no, char_no, pos;
-    char *str;
+    char *file_name, *str;
 } token_state;
 
 inline token_state *token_state_init(size_t len, char *str) {

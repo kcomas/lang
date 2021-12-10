@@ -1,8 +1,7 @@
 
 // nth Fibonaci Number
-// Example with typed implicit return
 fib: {(n::u64; u64)
-    ? {
+    ;; ? {
         (n = 0) { 0 }
         (n = 1) { 1 }
         { fib(n - 1) + fib(n - 2) }
