@@ -61,7 +61,7 @@ inline void test_queue_free(test_queue *tq) {
 #define TEST_END(STATUS) do { \
     ti->status = TEST_STATUS_PFX(STATUS); \
     return; \
-} while(0)
+} while (0)
 
 #define TEST_FAIL() TEST_END(FAIL)
 
