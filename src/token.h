@@ -33,26 +33,16 @@ typedef enum {
 } token_status;
 
 typedef struct {
-    token_status status;
     size_t line_no, char_no, pos;
 } token_state;
 
-inline token_state *token_state_init(void) {
-    token_state *ts = calloc(1, sizeof(token_state));
-    return ts;
-}
-
-inline void token_state_free(token_state *ts) {
-    free(ts);
-}
-
 // str needs to be null terminated
-token_status token_get(token_state *ts, token *t, char *str, bool advance);
+token_status token_get(token_state *const ts, token *const t, char *const str, bool advance);
 
-inline token_status token_next(token_state *ts, token *t, char *str) {
+inline token_status token_next(token_state *const ts, token *const t, char *const str) {
     return token_get(ts, t, str, true);
 }
 
-inline token_status token_peek(token_state *ts, token *t, char *str) {
+inline token_status token_peek(token_state *const ts, token *const t, char *const str) {
     return token_get(ts, t, str, false);
 }

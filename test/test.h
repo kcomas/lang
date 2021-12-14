@@ -24,7 +24,7 @@ inline test_item *test_item_init(const char *name, void (*fn)(test_item*)) {
     return ti;
 }
 
-inline void test_item_free(test_item *ti) {
+inline void test_item_free(test_item *const ti) {
     free(ti);
 }
 
@@ -37,7 +37,7 @@ inline test_queue *test_queue_init(void) {
     return calloc(1, sizeof(test_queue));
 }
 
-inline void test_queue_add(test_queue *tq, test_item *ti) {
+inline void test_queue_add(test_queue *const tq, test_item *const ti) {
     tq->total++;
     if (tq->head == NULL) {
         tq->head = ti;
@@ -48,7 +48,7 @@ inline void test_queue_add(test_queue *tq, test_item *ti) {
     }
 }
 
-inline void test_queue_free(test_queue *tq) {
+inline void test_queue_free(test_queue *const tq) {
     test_item *head = tq->head;
     while (head != NULL) {
         test_item *tmp = head;
@@ -67,11 +67,11 @@ inline void test_queue_free(test_queue *tq) {
 
 #define TEST_INVALID() TEST_END(INVALID)
 
-#define TEST(NAME) void NAME(__attribute__((unused)) test_item *ti)
+#define TEST(NAME) void NAME(__attribute__((unused)) test_item *const ti)
 
 #define ADD_TEST(NAME) test_queue_add(tq, test_item_init(#NAME, NAME))
 
-#define INIT_TESTS(BODY) const char *register_tests(test_queue *tq) { \
+#define INIT_TESTS(BODY) const char *register_tests(test_queue *const tq) { \
     BODY \
     return __FILE__; \
 }

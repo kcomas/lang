@@ -3,15 +3,15 @@
 
 extern inline test_item *test_item_init(const char *name, void (*fn)(test_item*));
 
-extern inline void test_item_free(test_item *ti);
+extern inline void test_item_free(test_item *const ti);
 
 extern inline test_queue *test_queue_init(void);
 
-extern inline void test_queue_add(test_queue *tq, test_item *ti);
+extern inline void test_queue_add(test_queue *const tq, test_item *const ti);
 
-extern inline void test_queue_free(test_queue *tq);
+extern inline void test_queue_free(test_queue *const tq);
 
-extern const char *register_tests(test_queue *tq);
+extern const char *register_tests(test_queue *const tq);
 
 int main(void) {
     test_queue *tq = test_queue_init();

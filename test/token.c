@@ -2,8 +2,8 @@
 #include "test.h"
 #include "../src/token.h"
 
-#define TOKEN_FOUND(TOKEN_STATE) do \
-    if (TOKEN_STATE->status != TOKEN_STATUS_PFX(OK)) TEST_FAIL(); \
+#define TOKEN_FOUND(STATUS) do \
+    if (STATUS != TOKEN_STATUS_PFX(OK)) TEST_FAIL(); \
 while (0)
 
 #define TOKEN_ASSERT(TOKEN, TYPE, LINE_NO, CHAR_NO, POS, LEN) do { \
@@ -12,10 +12,8 @@ while (0)
 
 TEST(add_assign) {
     token t;
-    token_state *ts = token_state_init();
-    TOKEN_FOUND(ts);
+    token_state ts = { .line_no = 0, .char_no = 0, .pos = 0 };
     char *str = "a: 1 + 2";
-    token_state_free(ts);
 }
 
 INIT_TESTS(
