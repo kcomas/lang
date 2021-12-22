@@ -12,7 +12,10 @@ while (0)
 
 TEST(add_assign) {
     token t;
-    token_state ts = { .line_no = 0, .char_no = 0, .pos = 0 };
+    token_init(&t);
+    TOKEN_ASSERT(t, END, 0, 0, 0, 0);
+    token_state ts;
+    token_state_init(&ts);
     char *str = "a: 1 + 2";
 }
 

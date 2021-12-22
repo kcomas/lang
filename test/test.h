@@ -17,7 +17,7 @@ typedef struct _test_item {
     struct _test_item *next;
 } test_item;
 
-inline test_item *test_item_init(const char *name, void (*fn)(test_item*)) {
+inline test_item *test_item_init(const char *const name, void (*fn)(test_item*)) {
     test_item *ti = calloc(1, sizeof(test_item));
     ti->name = name;
     ti->fn = fn;
