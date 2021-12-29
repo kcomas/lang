@@ -1,7 +1,7 @@
 
 // Ackermann Function
 // Example with how to use operator as fn
-ack: {(m::u64; n::u64; u64)
+ack: {(m::u64; n::u64)[u64]
     ;; ? {
         (m = 0) { n + 1 }
         (&(m > 0; n = 0)) { ack(m - 1; 1) }

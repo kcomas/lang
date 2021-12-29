@@ -16,22 +16,22 @@ typedef enum {
     TOKEN_PFX(ASSIGN),
     TOKEN_PFX(DEFINE),
     TOKEN_PFX(ADD),
+    TOKEN_PFX(MUL),
     TOKEN_PFX(_LEN)
 } token_type;
 
 typedef struct {
     token_type type;
-    // pos abs position of first char of token in string
-    // len abs len eg abc len = 3
-    size_t line_no, char_no, pos, len;
+    size_t line_no, char_no, start_pos, end_pos;
 } token;
 
 inline void token_init(token *const t) {
     t->type = TOKEN_PFX(END);
     t->line_no = 0;
     t->char_no = 0;
-    t->pos = 0;
-    t->len = 0;
+    // abs pos in str eg "abc" start = 0 end = 2
+    t->start_pos = 0;
+    t->end_pos = 0;
 }
 
 #define TOKEN_STATUS_PFX(NAME) TOKEN_STATE_##NAME
@@ -41,7 +41,7 @@ typedef enum {
 } token_status;
 
 typedef struct {
-    size_t line_no, char_no, pos;
+    size_t line_no, char_no, pos; // pos is abs loc in str
 } token_state;
 
 inline void token_state_init(token_state *const ts) {

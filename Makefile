@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -std=c18 -g -Wall -Wextra
+CFLAGS = -std=c17 -g -Wall -Wextra
 SRC = ./src
 TEST = ./test
 SOURCES = $(wildcard $(SRC)/*.c)

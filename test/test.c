@@ -1,7 +1,7 @@
 
 #include "test.h"
 
-extern inline test_item *test_item_init(const char *const name, void (*fn)(test_item*));
+extern inline test_item *test_item_init(const char *const name, test_fn fn);
 
 extern inline void test_item_free(test_item *const ti);
 
@@ -28,11 +28,11 @@ int main(void) {
                 break;
             case TEST_STATUS_PFX(FAIL):
                 tq->failed++;
-                printf("\e[1;31mFAILED\e[0m\n");
+                printf("\e[1;31mFAILED\e[0m \e[1;97mAT LINE:\e[0m %d\n", head->fi_line);
                 break;
             case TEST_STATUS_PFX(INVALID):
                 tq->invalid++;
-                printf("\e[1;35mINVALID\e[0m\n");
+                printf("\e[1;35mINVALID\e[0m \e[1;97mAT LINE:\e[0m %d\n", head->fi_line);
                 break;
         }
         head = head->next;

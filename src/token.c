@@ -29,7 +29,13 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
     char c = char_at(&ts_tmp, str);
     // check if it is a space \s\t
     while (c == ' ' || c == '\t') c = char_next(&ts_tmp, str);
-    if (advance) token_state_copy(ts, &ts_tmp);
+    size_t start_pos = ts_tmp.pos;
+    size_t end_pos = start_pos;
+    if (advance) {
+        // update new loc in str
+        ts_tmp.pos = end_pos;
+        token_state_copy(ts, &ts_tmp);
+    }
     return TOKEN_STATUS_PFX(OK);
 }
 

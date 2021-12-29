@@ -6,18 +6,25 @@
 
 #define TEST_STATUS_PFX(NAME) TEST_STATUS_##NAME
 
+typedef enum {
+    TEST_STATUS_PFX(PASS),
+    TEST_STATUS_PFX(FAIL),
+    TEST_STATUS_PFX(INVALID)
+} test_status;
+
+typedef struct _test_item test_item;
+
+typedef void (*test_fn) (test_item*);
+
 typedef struct _test_item {
-    enum {
-        TEST_STATUS_PFX(PASS),
-        TEST_STATUS_PFX(FAIL),
-        TEST_STATUS_PFX(INVALID)
-    } status;
+    test_status status;
+    int fi_line; // at which the test failed or invalid
     const char *name;
-    void (*fn)(struct _test_item*); // current test passed in
-    struct _test_item *next;
+    test_fn fn; // current test passed in
+    test_item *next;
 } test_item;
 
-inline test_item *test_item_init(const char *const name, void (*fn)(test_item*)) {
+inline test_item *test_item_init(const char *const name, test_fn fn) {
     test_item *ti = calloc(1, sizeof(test_item));
     ti->name = name;
     ti->fn = fn;
@@ -60,6 +67,7 @@ inline void test_queue_free(test_queue *const tq) {
 
 #define TEST_END(STATUS) do { \
     ti->status = TEST_STATUS_PFX(STATUS); \
+    ti->fi_line = __LINE__; \
     return; \
 } while (0)
 
