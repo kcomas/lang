@@ -23,6 +23,7 @@ typedef enum {
 
 typedef struct {
     token_type type;
+    // abs pos in str eg "abc" start = 0 end = 2
     size_t line_no, char_no, start_pos, end_pos; // line_no & char_no are at the start of token
 } token;
 
@@ -30,7 +31,6 @@ inline void token_init(token *const t) {
     t->type = TOKEN_PFX(END);
     t->line_no = 0;
     t->char_no = 0;
-    // abs pos in str eg "abc" start = 0 end = 2
     t->start_pos = 0;
     t->end_pos = 0;
 }

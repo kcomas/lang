@@ -21,6 +21,8 @@ TEST(add_assign) {
     TOKEN_ASSERT(t, VAR, 0, 0, 0, 2);
     TOKEN_FOUND(token_next(&ts, &t, str));
     TOKEN_ASSERT(t, ASSIGN, 0, 3, 3, 3);
+    TOKEN_FOUND(token_next(&ts, &t, str));
+    TOKEN_ASSERT(t, INT, 0, 5, 5, 5);
 }
 
 INIT_TESTS(

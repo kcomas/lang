@@ -32,6 +32,15 @@ static token_status load_word(token_state *const ts_tmp, const char *const str) 
     return TOKEN_STATUS_PFX(OK);
 }
 
+static token_status load_num(token_state *const ts_tmp, token *const t, const char *const str) {
+    // at first digit of num
+    char c = char_at(ts_tmp, str);
+    while (isdigit(c)) c = char_next(ts_tmp, str);
+    // TODO float + other num types
+    t->type = TOKEN_PFX(INT);
+    return TOKEN_STATUS_PFX(OK);
+}
+
 token_status token_get(token_state *const ts, token *const t, const char *const str, bool advance) {
     // do not use token_state passed in for next token
     token_state ts_tmp;
@@ -48,6 +57,8 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
     if (isalpha(c)) {
         if ((status = load_word(&ts_tmp, str)) != TOKEN_STATUS_PFX(OK)) return status;
         t->type = TOKEN_PFX(VAR);
+    } else if (isdigit(c)) {
+        if ((status = load_num(&ts_tmp, t, str)) != TOKEN_STATUS_PFX(OK)) return status;
     } else {
         switch (c) {
             case ':':
