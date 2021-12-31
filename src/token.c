@@ -61,6 +61,7 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
         if ((status = load_num(&ts_tmp, t, str)) != TOKEN_STATUS_PFX(OK)) return status;
     } else {
         switch (c) {
+            TOKEN_ONE_CHAR('\0', END);
             case ':':
                 c = char_peek(&ts_tmp, str);
                 if (c == ':') {
@@ -70,6 +71,8 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
                     t->type = TOKEN_PFX(ASSIGN);
                 }
                 break;
+            TOKEN_ONE_CHAR('+', ADD);
+            TOKEN_ONE_CHAR('*', MUL);
             default:
                 return TOKEN_STATUS_PFX(INVALID_CHAR);
         }

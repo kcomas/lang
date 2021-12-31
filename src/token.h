@@ -35,6 +35,10 @@ inline void token_init(token *const t) {
     t->end_pos = 0;
 }
 
+#define TOKEN_ONE_CHAR(C, TYPE) case C: \
+    t->type = TOKEN_PFX(TYPE); \
+    break
+
 #define TOKEN_STATUS_PFX(NAME) TOKEN_STATE_##NAME
 
 typedef enum {
