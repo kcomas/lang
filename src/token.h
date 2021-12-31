@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #define TOKEN_PFX(NAME) TOKEN_##NAME
 
@@ -22,7 +23,7 @@ typedef enum {
 
 typedef struct {
     token_type type;
-    size_t line_no, char_no, start_pos, end_pos;
+    size_t line_no, char_no, start_pos, end_pos; // line_no & char_no are at the start of token
 } token;
 
 inline void token_init(token *const t) {
@@ -37,7 +38,8 @@ inline void token_init(token *const t) {
 #define TOKEN_STATUS_PFX(NAME) TOKEN_STATE_##NAME
 
 typedef enum {
-    TOKEN_STATUS_PFX(OK)
+    TOKEN_STATUS_PFX(OK),
+    TOKEN_STATUS_PFX(INVALID_CHAR)
 } token_status;
 
 typedef struct {

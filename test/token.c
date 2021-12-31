@@ -17,6 +17,10 @@ TEST(add_assign) {
     token_state ts;
     token_state_init(&ts);
     char *str = "abc: 1 + 2 * 3";
+    TOKEN_FOUND(token_next(&ts, &t, str));
+    TOKEN_ASSERT(t, VAR, 0, 0, 0, 2);
+    TOKEN_FOUND(token_next(&ts, &t, str));
+    TOKEN_ASSERT(t, ASSIGN, 0, 3, 3, 3);
 }
 
 INIT_TESTS(

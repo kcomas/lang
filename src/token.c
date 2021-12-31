@@ -7,35 +7,66 @@ extern inline void token_state_init(token_state *const ts);
 
 extern inline void token_state_copy(token_state *const dest, const token_state *const src);
 
-static void advance_char_pos(token_state *const ts) {
-    ts->char_no++;
-    ts->pos++;
+static void advance_char_pos(token_state *const ts_tmp) {
+    ts_tmp->char_no++;
+    ts_tmp->pos++;
 }
 
-static char char_at(token_state *const ts, const char *const str) {
-    return str[ts->pos];
+static char char_at(const token_state *const ts_tmp, const char *const str) {
+    return str[ts_tmp->pos];
 }
 
-static char char_next(token_state *const ts, const char *const str) {
-    advance_char_pos(ts);
-    return char_at(ts, str);
+static char char_peek(const token_state *const ts_tmp, const char *const str) {
+    return str[ts_tmp->pos + 1];
+}
+
+static char char_next(token_state *const ts_tmp, const char *const str) {
+    advance_char_pos(ts_tmp);
+    return char_at(ts_tmp, str);
+}
+
+static token_status load_word(token_state *const ts_tmp, const char *const str) {
+    // we are on the fist char of the word
+    char c = char_at(ts_tmp, str);
+    while (isalpha(c) || isdigit(c)) c = char_next(ts_tmp, str);
+    return TOKEN_STATUS_PFX(OK);
 }
 
 token_status token_get(token_state *const ts, token *const t, const char *const str, bool advance) {
     // do not use token_state passed in for next token
     token_state ts_tmp;
+    token_status status;
     token_state_copy(&ts_tmp, ts);
     // on the char of the next token
     char c = char_at(&ts_tmp, str);
-    // check if it is a space \s\t
+    // check if it is a space \s|\t
     while (c == ' ' || c == '\t') c = char_next(&ts_tmp, str);
-    size_t start_pos = ts_tmp.pos;
-    size_t end_pos = start_pos;
-    if (advance) {
-        // update new loc in str
-        ts_tmp.pos = end_pos;
-        token_state_copy(ts, &ts_tmp);
+    // on char of possible valid token
+    t->start_pos = ts_tmp.pos;
+    t->line_no = ts_tmp.line_no;
+    t->char_no = ts_tmp.char_no;
+    if (isalpha(c)) {
+        if ((status = load_word(&ts_tmp, str)) != TOKEN_STATUS_PFX(OK)) return status;
+        t->type = TOKEN_PFX(VAR);
+    } else {
+        switch (c) {
+            case ':':
+                c = char_peek(&ts_tmp, str);
+                if (c == ':') {
+                    t->type = TOKEN_PFX(DEFINE);
+                    char_next(&ts_tmp, str);
+                } else {
+                    t->type = TOKEN_PFX(ASSIGN);
+                }
+                break;
+            default:
+                return TOKEN_STATUS_PFX(INVALID_CHAR);
+        }
+        c = char_next(&ts_tmp, str);
     }
+    // now at first char of next token or space
+    t->end_pos = ts_tmp.pos - 1;
+    if (advance) token_state_copy(ts, &ts_tmp);
     return TOKEN_STATUS_PFX(OK);
 }
 
