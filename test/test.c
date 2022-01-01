@@ -30,20 +30,13 @@ int main(void) {
                 tq->failed++;
                 printf("\e[1;31mFAILED\e[0m \e[1;97mAT LINE:\e[0m %d\n", head->fi_line);
                 break;
-            case TEST_STATUS_PFX(INVALID):
-                tq->invalid++;
-                printf("\e[1;35mINVALID\e[0m \e[1;97mAT LINE:\e[0m %d\n", head->fi_line);
-                break;
         }
         head = head->next;
     }
     printf("\e[1;97mFINISHED:\e[0m %s \e[1;36mTOTAL:\e[0m %lu ", test_file, tq->total);
-    printf("\e[1;32mPASSED:\e[0m %lu \e[1;31mFAILED:\e[0m %lu ", tq->passed, tq->failed);
-    printf("\e[1;35mINVALID:\e[0m %lu\n", tq->invalid);
+    printf("\e[1;32mPASSED:\e[0m %lu \e[1;31mFAILED:\e[0m %lu\n", tq->passed, tq->failed);
     int status = TEST_STATUS_PFX(PASS);
-    if (tq->failed > 0 && tq->invalid > 0) status = TEST_STATUS_PFX(FAIL) | TEST_STATUS_PFX(INVALID);
-    else if (tq->failed > 0) status = TEST_STATUS_PFX(FAIL);
-    else if (tq->invalid > 0) status = TEST_STATUS_PFX(INVALID);
+    if (tq->failed > 0) status = TEST_STATUS_PFX(FAIL);
     test_queue_free(tq);
     return status;
 }

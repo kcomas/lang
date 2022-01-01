@@ -9,7 +9,6 @@
 typedef enum {
     TEST_STATUS_PFX(PASS),
     TEST_STATUS_PFX(FAIL),
-    TEST_STATUS_PFX(INVALID)
 } test_status;
 
 typedef struct _test_item test_item;
@@ -18,7 +17,7 @@ typedef void (*test_fn) (test_item*);
 
 typedef struct _test_item {
     test_status status;
-    int fi_line; // at which the test failed or invalid
+    int fi_line; // at which the test failed
     const char *name;
     test_fn fn; // current test passed in
     test_item *next;
@@ -36,7 +35,7 @@ inline void test_item_free(test_item *const ti) {
 }
 
 typedef struct {
-    size_t total, passed, failed, invalid;
+    size_t total, passed, failed;
     test_item *head, *tail;
 } test_queue;
 
@@ -72,8 +71,6 @@ inline void test_queue_free(test_queue *const tq) {
 } while (0)
 
 #define TEST_FAIL() TEST_END(FAIL)
-
-#define TEST_INVALID() TEST_END(INVALID)
 
 #define TEST(NAME) void NAME(__attribute__((unused)) test_item *const ti)
 
