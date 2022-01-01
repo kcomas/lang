@@ -25,10 +25,12 @@ static char char_next(token_state *const ts_tmp, const char *const str) {
     return char_at(ts_tmp, str);
 }
 
-static token_status load_word(token_state *const ts_tmp, const char *const str) {
+static token_status load_word(token_state *const ts_tmp, token *const t, const char *const str) {
     // we are on the fist char of the word
     char c = char_at(ts_tmp, str);
     while (isalpha(c) || isdigit(c)) c = char_next(ts_tmp, str);
+    // TODO named types
+    t->type = TOKEN_PFX(VAR);
     return TOKEN_STATUS_PFX(OK);
 }
 
@@ -55,8 +57,7 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
     t->line_no = ts_tmp.line_no;
     t->char_no = ts_tmp.char_no;
     if (isalpha(c)) {
-        if ((status = load_word(&ts_tmp, str)) != TOKEN_STATUS_PFX(OK)) return status;
-        t->type = TOKEN_PFX(VAR);
+        if ((status = load_word(&ts_tmp, t, str)) != TOKEN_STATUS_PFX(OK)) return status;
     } else if (isdigit(c)) {
         if ((status = load_num(&ts_tmp, t, str)) != TOKEN_STATUS_PFX(OK)) return status;
     } else {
