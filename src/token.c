@@ -73,7 +73,22 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
                 }
                 break;
             TOKEN_ONE_CHAR('+', ADD);
+            TOKEN_ONE_CHAR('-', SUB);
             TOKEN_ONE_CHAR('*', MUL);
+            case '/':
+                c = char_peek(&ts_tmp, str);
+                if (c == '/') {
+                    // comment read until \n or \0
+                    c = char_next(&ts_tmp, str); // c is at second /
+                    while (c != '\n' && c != '\0') c = char_next(&ts_tmp, str);
+                    t->type = TOKEN_PFX(COMMENT);
+                    // c is at \n or \0 must reverse
+                    ts_tmp.char_no--;
+                    ts_tmp.pos--;
+                } else {
+                    t->type = TOKEN_PFX(DIV);
+                }
+                break;
             default:
                 return TOKEN_STATUS_PFX(INVALID_CHAR);
         }

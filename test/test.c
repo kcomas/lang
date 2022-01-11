@@ -11,7 +11,7 @@ extern inline void test_queue_add(test_queue *const tq, test_item *const ti);
 
 extern inline void test_queue_free(test_queue *const tq);
 
-extern const char *register_tests(test_queue *const tq);
+const char *register_tests(test_queue *const tq);
 
 int main(void) {
     test_queue *tq = test_queue_init();
