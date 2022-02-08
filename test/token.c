@@ -1,7 +1,7 @@
 
 #include "token.h"
 
-TEST(add_assign) {
+TEST(arith_with_comment) {
     TOKEN_TEST_INIT("abc: 1 + 2 * 3 - 45 / 67 // this is a comment");
     TOKEN_ASSERT(VAR, 0, 0, 0, 2);
     TOKEN_ASSERT(ASSIGN, 0, 3, 3, 3);
@@ -19,5 +19,5 @@ TEST(add_assign) {
 }
 
 INIT_TESTS(
-    ADD_TEST(add_assign);
+    ADD_TEST(arith_with_comment);
 );

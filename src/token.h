@@ -42,12 +42,21 @@ inline void token_init(token *const t) {
     t->type = TOKEN_PFX(TYPE); \
     break
 
+#define TOKEN_TWO_CHAR(C1, C2, TYPE1, TYPE2) case C1: \
+    c = char_peek(&ts_tmp, str); \
+    if (c == C2) { \
+        t->type = TOKEN_PFX(TYPE2); \
+        char_next(&ts_tmp, str); \
+    } else { \
+        t->type = TOKEN_PFX(TYPE1); \
+    } \
+    break
+
 #define TOKEN_STATUS_PFX(NAME) TOKEN_STATE_##NAME
 
 typedef enum {
     TOKEN_STATUS_PFX(OK),
-    TOKEN_STATUS_PFX(INVALID_CHAR),
-    TOKEN_STATUS_PFX(INVALID_COMMENT)
+    TOKEN_STATUS_PFX(INVALID_CHAR)
 } token_status;
 
 typedef struct {
