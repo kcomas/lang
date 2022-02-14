@@ -3,6 +3,7 @@
 
 #include "test.h"
 #include "../src/token.h"
+#include "../src/file.h"
 
 #define TOKEN_TEST_INIT(STR) token t; \
     token_init(&t); \

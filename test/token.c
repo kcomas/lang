@@ -18,6 +18,15 @@ TEST(arith_with_comment) {
     TOKEN_ASSERT(END, 0, 45, 45, 45);
 }
 
+TEST(fac_file) {
+    char *str;
+    file_status status = file_to_c_string("./examples/fac.lang", &str);
+    if (status != FILE_STATUS_PFX(OK)) TEST_FAIL();
+    printf("%s\n", str);
+    free(str);
+}
+
 INIT_TESTS(
     ADD_TEST(arith_with_comment);
+    ADD_TEST(fac_file);
 );

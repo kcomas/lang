@@ -16,7 +16,7 @@ all: $(NAME)
 $(NAME): $(OBJECTS)
 	$(CCOBJ)
 
-token$(TNAME): $(SRC)/token.o $(TEST)/token.o $(TMAIN)
+token$(TNAME): $(SRC)/file.o $(SRC)/token.o $(TEST)/token.o $(TMAIN)
 	$(CCOBJ)
 
 basic$(TNAME): $(TEST)/basic.o $(TMAIN)
