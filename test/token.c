@@ -22,7 +22,6 @@ TEST(fac_file) {
     char *str;
     file_status status = file_to_c_string("./examples/fac.lang", &str);
     if (status != FILE_STATUS_PFX(OK)) TEST_FAIL();
-    printf("%s\n", str);
     free(str);
 }
 

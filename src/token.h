@@ -11,16 +11,34 @@ typedef enum {
     TOKEN_PFX(END), // null byte of str
     TOKEN_PFX(NEWLINE),
     TOKEN_PFX(SEMICOLON),
-    TOKEN_PFX(COMMENT),
+    TOKEN_PFX(RETURN),
+    TOKEN_PFX(LBRACE), // {
+    TOKEN_PFX(RBRACE), // }
+    TOKEN_PFX(LBRACKET), // [
+    TOKEN_PFX(RBRACKET), // ]
+    TOKEN_PFX(LPARENS), // (
+    TOKEN_PFX(RPARENS), // )
     TOKEN_PFX(VAR),
     TOKEN_PFX(INT),
     TOKEN_PFX(FLOAT),
+    TOKEN_PFX(U1),
+    TOKEN_PFX(U8),
+    TOKEN_PFX(U16),
+    TOKEN_PFX(U32),
+    TOKEN_PFX(U64),
+    TOKEN_PFX(I8),
+    TOKEN_PFX(I16),
+    TOKEN_PFX(I32),
+    TOKEN_PFX(I64),
+    TOKEN_PFX(F32),
+    TOKEN_PFX(F64),
     TOKEN_PFX(ASSIGN),
     TOKEN_PFX(DEFINE),
     TOKEN_PFX(ADD),
     TOKEN_PFX(SUB),
     TOKEN_PFX(MUL),
     TOKEN_PFX(DIV),
+    TOKEN_PFX(COMMENT),
     TOKEN_PFX(_LEN)
 } token_type;
 
@@ -40,6 +58,12 @@ inline void token_init(token *const t) {
 
 #define TOKEN_ONE_CHAR(C, TYPE) case C: \
     t->type = TOKEN_PFX(TYPE); \
+    break
+
+#define TOKEN_TYPE_DOUBLE_SWITCH(STR, START, PLUS, C1, C2, TYPE) case C1: \
+    switch (STR[START + PLUS]) { \
+        TOKEN_ONE_CHAR(C2, TYPE); \
+    } \
     break
 
 #define TOKEN_TWO_CHAR(C1, C2, TYPE1, TYPE2) case C1: \

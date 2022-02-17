@@ -13,17 +13,17 @@ typedef enum {
 
 typedef struct _test_item test_item;
 
-typedef void (*test_fn) (test_item*);
+typedef void test_fn(test_item *ti);
 
 typedef struct _test_item {
     test_status status;
     int fi_line; // at which the test failed
     const char *name;
-    test_fn fn; // current test passed in
+    test_fn *fn; // current test passed in
     test_item *next;
 } test_item;
 
-inline test_item *test_item_init(const char *const name, test_fn fn) {
+inline test_item *test_item_init(const char *const name, test_fn *fn) {
     test_item *ti = calloc(1, sizeof(test_item));
     ti->name = name;
     ti->fn = fn;
@@ -74,7 +74,7 @@ inline void test_queue_free(test_queue *const tq) {
 
 #define TEST(NAME) void NAME(__attribute__((unused)) test_item *const ti)
 
-#define ADD_TEST(NAME) test_queue_add(tq, test_item_init(#NAME, NAME))
+#define ADD_TEST(NAME) test_queue_add(tq, test_item_init(#NAME, &NAME))
 
 #define INIT_TESTS(BODY) const char *register_tests(test_queue *const tq) { \
     BODY \

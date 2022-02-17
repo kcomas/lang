@@ -29,8 +29,48 @@ static token_status load_word(token_state *const ts_tmp, token *const t, const c
     // we are on the fist char of the word
     char c = char_at(ts_tmp, str);
     while (isalpha(c) || isdigit(c)) c = char_next(ts_tmp, str);
-    // TODO named types
     t->type = TOKEN_PFX(VAR);
+    size_t start = t->start_pos;
+    size_t len = ts_tmp->pos - start + 1;
+    // possible type
+    if (len == 2) {
+        switch (str[start]) {
+            case 'u':
+                switch (str[start + 1]) {
+                    TOKEN_ONE_CHAR('1', U1);
+                    TOKEN_ONE_CHAR('8', U8);
+                }
+                break;
+            case 'i':
+                switch (str[start + 1]) {
+                    TOKEN_ONE_CHAR('8', I8);
+                }
+                break;
+        }
+    } else if (len == 3) {
+        switch (str[start]) {
+            case 'u':
+                switch (str[start + 1]) {
+                    TOKEN_TYPE_DOUBLE_SWITCH(str, start, 2, '1', '6', U16);
+                    TOKEN_TYPE_DOUBLE_SWITCH(str, start, 2, '3', '2', U32);
+                    TOKEN_TYPE_DOUBLE_SWITCH(str, start, 2, '6', '4', U64);
+                }
+                break;
+            case 'i':
+                switch (str[start + 1]) {
+                    TOKEN_TYPE_DOUBLE_SWITCH(str, start, 2, '1', '6', I16);
+                    TOKEN_TYPE_DOUBLE_SWITCH(str, start, 2, '3', '2', I32);
+                    TOKEN_TYPE_DOUBLE_SWITCH(str, start, 2, '6', '4', I64);
+                }
+                break;
+            case 'f':
+                switch (str[start + 1]) {
+                    TOKEN_TYPE_DOUBLE_SWITCH(str, start, 2, '3', '2', F32);
+                    TOKEN_TYPE_DOUBLE_SWITCH(str, start, 2, '6', '4', F64);
+                }
+                break;
+        }
+    }
     return TOKEN_STATUS_PFX(OK);
 }
 
@@ -64,6 +104,13 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
     } else {
         switch (c) {
             TOKEN_ONE_CHAR('\0', END);
+            case '\n':
+                advance_char_pos(&ts_tmp);
+                ts_tmp.line_no++;
+                ts_tmp.char_no = 0;
+                t->type = TOKEN_PFX(NEWLINE);
+                break;
+            TOKEN_TWO_CHAR(';', ';', SEMICOLON, RETURN);
             TOKEN_TWO_CHAR(':', ':', ASSIGN, DEFINE);
             TOKEN_ONE_CHAR('+', ADD);
             TOKEN_ONE_CHAR('-', SUB);
