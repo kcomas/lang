@@ -15,4 +15,4 @@ typedef enum {
     FILE_STATUS_PFX(CANNOT_READ)
 } file_status;
 
-file_status file_to_c_string(const char *const filename, char **const str);
+file_status file_to_c_string(const char *const filename, char **str);

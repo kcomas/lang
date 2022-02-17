@@ -1,7 +1,7 @@
 
 #include "file.h"
 
-file_status file_to_c_string(const char *const filename, char **const str) {
+file_status file_to_c_string(const char *const filename, char **str) {
     int fd = open(filename, O_RDONLY);
     if (fd == -1) return FILE_STATUS_PFX(CANNOT_OPEN);
     struct stat sb;
