@@ -5,6 +5,6 @@
 
 typedef struct {
     token_status t_status;
+    token_state t_state;
     const char *str;
-    token_state *t_state;
 } parser_state;

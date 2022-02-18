@@ -8,16 +8,6 @@
 #define TOKEN_PFX(NAME) TOKEN_##NAME
 
 typedef enum {
-    TOKEN_PFX(END), // null byte of str
-    TOKEN_PFX(NEWLINE),
-    TOKEN_PFX(SEMICOLON),
-    TOKEN_PFX(RETURN),
-    TOKEN_PFX(LBRACE), // {
-    TOKEN_PFX(RBRACE), // }
-    TOKEN_PFX(LBRACKET), // [
-    TOKEN_PFX(RBRACKET), // ]
-    TOKEN_PFX(LPARENS), // (
-    TOKEN_PFX(RPARENS), // )
     TOKEN_PFX(VAR),
     TOKEN_PFX(INT),
     TOKEN_PFX(FLOAT),
@@ -32,8 +22,21 @@ typedef enum {
     TOKEN_PFX(I64),
     TOKEN_PFX(F32),
     TOKEN_PFX(F64),
+    TOKEN_PFX(END), // null byte of str
+    TOKEN_PFX(NEWLINE),
+    TOKEN_PFX(SEMICOLON),
+    TOKEN_PFX(RETURN),
+    TOKEN_PFX(LBRACE), // {
+    TOKEN_PFX(RBRACE), // }
+    TOKEN_PFX(LBRACKET), // [
+    TOKEN_PFX(RBRACKET), // ]
+    TOKEN_PFX(LPARENS), // (
+    TOKEN_PFX(RPARENS), // )
     TOKEN_PFX(ASSIGN),
     TOKEN_PFX(DEFINE),
+    TOKEN_PFX(QUESTION),
+    TOKEN_PFX(IF),
+    TOKEN_PFX(WHILE),
     TOKEN_PFX(ADD),
     TOKEN_PFX(SUB),
     TOKEN_PFX(MUL),
@@ -70,7 +73,7 @@ inline void token_init(token *const t) {
     c = char_peek(&ts_tmp, str); \
     if (c == C2) { \
         t->type = TOKEN_PFX(TYPE2); \
-        char_next(&ts_tmp, str); \
+        advance_char_pos(&ts_tmp); \
     } else { \
         t->type = TOKEN_PFX(TYPE1); \
     } \

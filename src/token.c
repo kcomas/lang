@@ -25,6 +25,12 @@ static char char_next(token_state *const ts_tmp, const char *const str) {
     return char_at(ts_tmp, str);
 }
 
+static void finalize_tokenizer_pass(token_state *const ts, token_state *const ts_tmp, token *const t, bool advance) {
+    // now at first char of next token or space
+    t->end_pos = ts_tmp->pos - 1;
+    if (advance) token_state_copy(ts, ts_tmp);
+}
+
 static token_status load_word(token_state *const ts_tmp, token *const t, const char *const str) {
     // we are on the fist char of the word
     char c = char_at(ts_tmp, str);
@@ -109,9 +115,30 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
                 ts_tmp.line_no++;
                 ts_tmp.char_no = 0;
                 t->type = TOKEN_PFX(NEWLINE);
-                break;
+                finalize_tokenizer_pass(ts, &ts_tmp, t, advance);
+                return TOKEN_STATUS_PFX(OK);
             TOKEN_TWO_CHAR(';', ';', SEMICOLON, RETURN);
+            TOKEN_ONE_CHAR('{', LBRACE);
+            TOKEN_ONE_CHAR('}', RBRACE);
+            TOKEN_ONE_CHAR('[', LBRACKET);
+            TOKEN_ONE_CHAR(']', RBRACKET);
+            TOKEN_ONE_CHAR('(', LPARENS);
+            TOKEN_ONE_CHAR(')', RPARENS);
             TOKEN_TWO_CHAR(':', ':', ASSIGN, DEFINE);
+            case '?':
+                t->type = TOKEN_PFX(QUESTION);
+                c = char_peek(&ts_tmp, str);
+                switch (c) {
+                    case '?':
+                        t->type = TOKEN_PFX(IF);
+                        advance_char_pos(&ts_tmp);
+                        break;
+                    case '@':
+                        t->type = TOKEN_PFX(WHILE);
+                        advance_char_pos(&ts_tmp);
+                        break;
+                }
+                break;
             TOKEN_ONE_CHAR('+', ADD);
             TOKEN_ONE_CHAR('-', SUB);
             TOKEN_ONE_CHAR('*', MUL);
@@ -132,11 +159,9 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
             default:
                 return TOKEN_STATUS_PFX(INVALID_CHAR);
         }
-        c = char_next(&ts_tmp, str);
+        advance_char_pos(&ts_tmp);
     }
-    // now at first char of next token or space
-    t->end_pos = ts_tmp.pos - 1;
-    if (advance) token_state_copy(ts, &ts_tmp);
+    finalize_tokenizer_pass(ts, &ts_tmp, t, advance);
     return TOKEN_STATUS_PFX(OK);
 }
 
