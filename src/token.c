@@ -37,7 +37,7 @@ static token_status load_word(token_state *const ts_tmp, token *const t, const c
     while (isalpha(c) || isdigit(c)) c = char_next(ts_tmp, str);
     t->type = TOKEN_PFX(VAR);
     size_t start = t->start_pos;
-    size_t len = ts_tmp->pos - start + 1;
+    size_t len = ts_tmp->pos - start;
     // possible type
     if (len == 2) {
         switch (str[start]) {
@@ -90,6 +90,18 @@ static token_status load_num(token_state *const ts_tmp, token *const t, const ch
     return TOKEN_STATUS_PFX(OK);
 }
 
+static token_status load_string(token_state *const ts_tmp, token *const t, const char *const str) {
+    // at first "
+    char c = char_next(ts_tmp, str);
+    // at first char of str or " for empty str
+    while (c != '"') {
+        c = char_next(ts_tmp, str);
+        if (c == '\0') return TOKEN_STATUS_PFX(INVALID_STRING);
+    }
+    t->type = TOKEN_PFX(STRING);
+    return TOKEN_STATUS_PFX(OK);
+}
+
 token_status token_get(token_state *const ts, token *const t, const char *const str, bool advance) {
     // do not use token_state passed in for next token
     token_state ts_tmp;
@@ -109,6 +121,9 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
         if ((status = load_num(&ts_tmp, t, str)) != TOKEN_STATUS_PFX(OK)) return status;
     } else {
         switch (c) {
+            case '"':
+                if ((status = load_string(&ts_tmp, t, str)) != TOKEN_STATUS_PFX(OK)) return status;
+                break;
             TOKEN_ONE_CHAR('\0', END);
             case '\n':
                 advance_char_pos(&ts_tmp);
@@ -139,6 +154,9 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
                         break;
                 }
                 break;
+            TOKEN_TWO_CHAR('|', '|', OR, BITOR);
+            TOKEN_TWO_CHAR('=', '=', EQ, DEEPEQ);
+            TOKEN_ONE_CHAR('$', CAST);
             TOKEN_ONE_CHAR('+', ADD);
             TOKEN_ONE_CHAR('-', SUB);
             TOKEN_ONE_CHAR('*', MUL);
@@ -158,6 +176,16 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
                 break;
             default:
                 return TOKEN_STATUS_PFX(INVALID_CHAR);
+            case '<':
+                t->type = TOKEN_PFX(LESS);
+                c = char_peek(&ts_tmp, str);
+                switch (c) {
+                    case '&':
+                        t->type = TOKEN_PFX(READWRITE);
+                        advance_char_pos(&ts_tmp);
+                        break;
+                }
+                break;
         }
         advance_char_pos(&ts_tmp);
     }

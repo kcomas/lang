@@ -8,9 +8,11 @@
 #define TOKEN_PFX(NAME) TOKEN_##NAME
 
 typedef enum {
+    // types
     TOKEN_PFX(VAR),
     TOKEN_PFX(INT),
     TOKEN_PFX(FLOAT),
+    TOKEN_PFX(STRING),
     TOKEN_PFX(U1),
     TOKEN_PFX(U8),
     TOKEN_PFX(U16),
@@ -22,6 +24,8 @@ typedef enum {
     TOKEN_PFX(I64),
     TOKEN_PFX(F32),
     TOKEN_PFX(F64),
+    // control constructs
+    TOKEN_PFX(COMMENT),
     TOKEN_PFX(END), // null byte of str
     TOKEN_PFX(NEWLINE),
     TOKEN_PFX(SEMICOLON),
@@ -37,11 +41,19 @@ typedef enum {
     TOKEN_PFX(QUESTION),
     TOKEN_PFX(IF),
     TOKEN_PFX(WHILE),
+    // Logic
+    TOKEN_PFX(OR),
+    TOKEN_PFX(BITOR),
+    TOKEN_PFX(EQ),
+    TOKEN_PFX(DEEPEQ),
+    TOKEN_PFX(LESS),
+    // Operators
+    TOKEN_PFX(CAST),
     TOKEN_PFX(ADD),
     TOKEN_PFX(SUB),
     TOKEN_PFX(MUL),
     TOKEN_PFX(DIV),
-    TOKEN_PFX(COMMENT),
+    TOKEN_PFX(READWRITE),
     TOKEN_PFX(_LEN)
 } token_type;
 
@@ -83,7 +95,8 @@ inline void token_init(token *const t) {
 
 typedef enum {
     TOKEN_STATUS_PFX(OK),
-    TOKEN_STATUS_PFX(INVALID_CHAR)
+    TOKEN_STATUS_PFX(INVALID_CHAR),
+    TOKEN_STATUS_PFX(INVALID_STRING)
 } token_status;
 
 typedef struct {
