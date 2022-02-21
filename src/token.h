@@ -54,7 +54,6 @@ typedef enum {
     TOKEN_PFX(MUL),
     TOKEN_PFX(DIV),
     TOKEN_PFX(READWRITE),
-    TOKEN_PFX(_LEN)
 } token_type;
 
 typedef struct {
@@ -65,8 +64,8 @@ typedef struct {
 
 inline void token_init(token *const t) {
     t->type = TOKEN_PFX(END);
-    t->line_no = 0;
-    t->char_no = 0;
+    t->line_no = 1;
+    t->char_no = 1;
     t->start_pos = 0;
     t->end_pos = 0;
 }
@@ -104,8 +103,8 @@ typedef struct {
 } token_state;
 
 inline void token_state_init(token_state *const ts) {
-    ts->line_no = 0;
-    ts->char_no = 0;
+    ts->line_no = 1;
+    ts->char_no = 1;
     ts->pos = 0;
 }
 

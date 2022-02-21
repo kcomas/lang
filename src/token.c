@@ -128,7 +128,7 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
             case '\n':
                 advance_char_pos(&ts_tmp);
                 ts_tmp.line_no++;
-                ts_tmp.char_no = 0;
+                ts_tmp.char_no = 1;
                 t->type = TOKEN_PFX(NEWLINE);
                 finalize_tokenizer_pass(ts, &ts_tmp, t, advance);
                 return TOKEN_STATUS_PFX(OK);
