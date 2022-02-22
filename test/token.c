@@ -4,6 +4,7 @@
 TEST(arith_with_comment) {
     TOKEN_TEST_INIT("abc: 1 + 2 * 3 - 45 / 67 // this is a comment");
     TOKEN_ASSERT(VAR, 1, 1, 0, 2);
+    TOKEN_PEEK_ASSERT(ASSIGN, 1, 4, 3, 3);
     TOKEN_ASSERT(ASSIGN, 1, 4, 3, 3);
     TOKEN_ASSERT(INT, 1, 6, 5, 5);
     TOKEN_ASSERT(ADD, 1 , 8, 7, 7);
@@ -14,6 +15,7 @@ TEST(arith_with_comment) {
     TOKEN_ASSERT(INT, 1, 18, 17, 18);
     TOKEN_ASSERT(DIV, 1, 21, 20, 20);
     TOKEN_ASSERT(INT, 1, 23, 22, 23);
+    TOKEN_PEEK_ASSERT(COMMENT, 1, 26, 25, 44);
     TOKEN_ASSERT(COMMENT, 1, 26, 25, 44);
     TOKEN_ASSERT(END, 1, 46, 45, 45);
 }

@@ -154,12 +154,23 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
                         break;
                 }
                 break;
-            TOKEN_TWO_CHAR('|', '|', OR, BITOR);
-            TOKEN_TWO_CHAR('=', '=', EQ, DEEPEQ);
-            TOKEN_ONE_CHAR('$', CAST);
-            TOKEN_ONE_CHAR('+', ADD);
-            TOKEN_ONE_CHAR('-', SUB);
-            TOKEN_ONE_CHAR('*', MUL);
+                TOKEN_TWO_CHAR('|', '|', OR, BITOR);
+                TOKEN_TWO_CHAR('=', '=', EQ, DEEPEQ);
+            case '<':
+                t->type = TOKEN_PFX(LESS);
+                c = char_peek(&ts_tmp, str);
+                switch (c) {
+                    case '&':
+                        t->type = TOKEN_PFX(READWRITE);
+                        advance_char_pos(&ts_tmp);
+                        break;
+                }
+                break;
+
+                TOKEN_ONE_CHAR('$', CAST);
+                TOKEN_ONE_CHAR('+', ADD);
+                TOKEN_ONE_CHAR('-', SUB);
+                TOKEN_ONE_CHAR('*', MUL);
             case '/':
                 c = char_peek(&ts_tmp, str);
                 if (c == '/') {
@@ -176,16 +187,6 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
                 break;
             default:
                 return TOKEN_STATUS_PFX(INVALID_CHAR);
-            case '<':
-                t->type = TOKEN_PFX(LESS);
-                c = char_peek(&ts_tmp, str);
-                switch (c) {
-                    case '&':
-                        t->type = TOKEN_PFX(READWRITE);
-                        advance_char_pos(&ts_tmp);
-                        break;
-                }
-                break;
         }
         advance_char_pos(&ts_tmp);
     }
