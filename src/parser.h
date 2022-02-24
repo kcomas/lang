@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <string.h>
 #include "token.h"
 
 #define PARSER_NODE_TYPE_PFX(NAME) PARSER_NODE_TYPE_PFX_##NAME
@@ -38,9 +39,16 @@ inline void parser_node_list_add_item(parser_node_list *const nl, const parser_n
 }
 
 typedef struct {
-    size_t len; // len does not include null term
+    size_t size; // size does not include null term
     char buf[]; // must be null termed
 } parser_node_buf;
+
+inline parser_node_buf *parser_node_buf_init(size_t size, size_t start_pos, size_t end_pos, const char *const str) {
+    parser_node_buf *b = calloc(1, sizeof(parser_node_buf) + sizeof(char) * size);
+    b->size = end_pos - start_pos + 1; // conform to token length
+    memcpy(b->buf, str + start_pos, b->size);
+    return b;
+}
 
 #define MAX_ARGS 8
 
@@ -51,15 +59,26 @@ typedef struct {
     parser_node_list body;
 } parser_node_fn;
 
+inline parser_node_fn *parser_node_fn_init(void) {
+    return calloc(1, sizeof(parser_node_fn));
+}
+
 typedef union {
     parser_node_buf *buf;
     parser_node_fn *fn;
 } parser_node_data;
 
 typedef struct _parser_node {
-    const parser_node_type type;
-    const parser_node_data data;
-} parser_node;
+    parser_node_type type;
+    parser_node_data data;
+} parser_node; // one created never mutate
+
+inline const parser_node *parser_node_init(parser_node_type type, parser_node_data data) {
+    parser_node *node = calloc(1, sizeof(parser_node));
+    node->type = type;
+    node->data = data;
+    return node;
+}
 
 #define PARSER_STATUS_PFX(NAME) PARSER_STATUS_PFX_##NAME
 
