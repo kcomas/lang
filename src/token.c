@@ -31,6 +31,16 @@ static void finalize_tokenizer_pass(token_state *const ts, token_state *const ts
     if (advance) token_state_copy(ts, ts_tmp);
 }
 
+#define TOKEN_ONE_CHAR(C, TYPE) case C: \
+    t->type = TOKEN_PFX(TYPE); \
+    break
+
+#define TOKEN_TYPE_DOUBLE_SWITCH(C1, C2, TYPE) case C1: \
+    switch (str[start + 2]) { \
+        TOKEN_ONE_CHAR(C2, TYPE); \
+    } \
+    break
+
 static token_status load_word(token_state *const ts_tmp, token *const t, const char *const str) {
     // we are on the fist char of the word
     char c = char_at(ts_tmp, str);
@@ -57,22 +67,22 @@ static token_status load_word(token_state *const ts_tmp, token *const t, const c
         switch (str[start]) {
             case 'u':
                 switch (str[start + 1]) {
-                    TOKEN_TYPE_DOUBLE_SWITCH(str, start, 2, '1', '6', U16);
-                    TOKEN_TYPE_DOUBLE_SWITCH(str, start, 2, '3', '2', U32);
-                    TOKEN_TYPE_DOUBLE_SWITCH(str, start, 2, '6', '4', U64);
+                    TOKEN_TYPE_DOUBLE_SWITCH('1', '6', U16);
+                    TOKEN_TYPE_DOUBLE_SWITCH('3', '2', U32);
+                    TOKEN_TYPE_DOUBLE_SWITCH('6', '4', U64);
                 }
                 break;
             case 'i':
                 switch (str[start + 1]) {
-                    TOKEN_TYPE_DOUBLE_SWITCH(str, start, 2, '1', '6', I16);
-                    TOKEN_TYPE_DOUBLE_SWITCH(str, start, 2, '3', '2', I32);
-                    TOKEN_TYPE_DOUBLE_SWITCH(str, start, 2, '6', '4', I64);
+                    TOKEN_TYPE_DOUBLE_SWITCH('1', '6', I16);
+                    TOKEN_TYPE_DOUBLE_SWITCH('3', '2', I32);
+                    TOKEN_TYPE_DOUBLE_SWITCH('6', '4', I64);
                 }
                 break;
             case 'f':
                 switch (str[start + 1]) {
-                    TOKEN_TYPE_DOUBLE_SWITCH(str, start, 2, '3', '2', F32);
-                    TOKEN_TYPE_DOUBLE_SWITCH(str, start, 2, '6', '4', F64);
+                    TOKEN_TYPE_DOUBLE_SWITCH('3', '2', F32);
+                    TOKEN_TYPE_DOUBLE_SWITCH('6', '4', F64);
                 }
                 break;
         }
@@ -101,6 +111,16 @@ static token_status load_string(token_state *const ts_tmp, token *const t, const
     t->type = TOKEN_PFX(STRING);
     return TOKEN_STATUS_PFX(OK);
 }
+
+#define TOKEN_TWO_CHAR(C1, C2, TYPE1, TYPE2) case C1: \
+    c = char_peek(&ts_tmp, str); \
+    if (c == C2) { \
+        t->type = TOKEN_PFX(TYPE2); \
+        advance_char_pos(&ts_tmp); \
+    } else { \
+        t->type = TOKEN_PFX(TYPE1); \
+    } \
+    break
 
 token_status token_get(token_state *const ts, token *const t, const char *const str, bool advance) {
     // do not use token_state passed in for next token
@@ -166,7 +186,6 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
                         break;
                 }
                 break;
-
                 TOKEN_ONE_CHAR('$', CAST);
                 TOKEN_ONE_CHAR('+', ADD);
                 TOKEN_ONE_CHAR('-', SUB);

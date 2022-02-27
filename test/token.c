@@ -97,4 +97,4 @@ TEST(fac_file) {
 INIT_TESTS(
     ADD_TEST(arith_with_comment);
     ADD_TEST(fac_file);
-);
+)

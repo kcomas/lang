@@ -12,4 +12,4 @@ TEST(basic_fail) {
 INIT_TESTS(
     ADD_TEST(basic_pass);
     ADD_TEST(basic_fail);
-);
+)

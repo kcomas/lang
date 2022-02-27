@@ -10,13 +10,18 @@ NAME = lang
 TNAME = _test
 TMAIN = $(TEST)/test.o
 CCOBJ = $(CC) -o $@ $^
+TOKEN_SOURCES = $(SRC)/file.o $(SRC)/token.o
+PARSER_SOURCES = $(SRC)/parser.o $(TOKEN_SOURCES)
 
 all: $(NAME)
 
 $(NAME): $(OBJECTS)
 	$(CCOBJ)
 
-token$(TNAME): $(SRC)/file.o $(SRC)/token.o $(TEST)/token.o $(TMAIN)
+parser$(TNAME): $(PARSER_SOURCES) $(TEST)/parser.o $(TMAIN)
+	$(CCOBJ)
+
+token$(TNAME): $(TOKEN_SOURCES) $(TEST)/token.o $(TMAIN)
 	$(CCOBJ)
 
 basic$(TNAME): $(TEST)/basic.o $(TMAIN)

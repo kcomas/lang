@@ -12,7 +12,11 @@ typedef enum {
     PARSER_NODE_TYPE_PFX(FLOAT),
     PARSER_NODE_TYPE_PFX(STRING),
     PARSER_NODE_TYPE_PFX(FN),
-    PARSER_NODE_TYPE_PFX(ASSIGN)
+    PARSER_NODE_TYPE_PFX(ASSIGN),
+    PARSER_NODE_TYPE_PFX(ADD),
+    PARSER_NODE_TYPE_PFX(SUB),
+    PARSER_NODE_TYPE_PFX(MUL),
+    PARSER_NODE_TYPE_PFX(DIV),
 } parser_node_type;
 
 typedef struct _parser_node parser_node;
@@ -43,11 +47,20 @@ typedef struct {
     char buf[]; // must be null termed
 } parser_node_buf;
 
-inline parser_node_buf *parser_node_buf_init(size_t size, size_t start_pos, size_t end_pos, const char *const str) {
-    parser_node_buf *b = calloc(1, sizeof(parser_node_buf) + sizeof(char) * size);
-    b->size = end_pos - start_pos + 1; // conform to token length
-    memcpy(b->buf, str + start_pos, b->size);
+inline parser_node_buf *parser_node_buf_init(const token *const t, const char *const str) {
+    size_t size = t->end_pos - t->start_pos + 1; // conform to token length
+    parser_node_buf *b = calloc(1, sizeof(parser_node_buf) + sizeof(char) * size + sizeof(char)); // null byte
+    b->size = size;
+    memcpy(b->buf, str + t->start_pos, b->size);
     return b;
+}
+
+typedef struct {
+    parser_node *left, *right;
+} parser_node_op;
+
+inline parser_node_op *parser_node_op_init(void) {
+    return calloc(1, sizeof(parser_node_op));
 }
 
 #define MAX_ARGS 8
@@ -65,6 +78,7 @@ inline parser_node_fn *parser_node_fn_init(void) {
 
 typedef union {
     parser_node_buf *buf;
+    parser_node_op *op;
     parser_node_fn *fn;
 } parser_node_data;
 
@@ -73,7 +87,7 @@ typedef struct _parser_node {
     parser_node_data data;
 } parser_node; // one created never mutate
 
-inline const parser_node *parser_node_init(parser_node_type type, parser_node_data data) {
+inline parser_node *parser_node_init(parser_node_type type, parser_node_data data) {
     parser_node *node = calloc(1, sizeof(parser_node));
     node->type = type;
     node->data = data;
@@ -84,39 +98,25 @@ inline const parser_node *parser_node_init(parser_node_type type, parser_node_da
 
 typedef enum {
     PARSER_STATUS_PFX(OK),
+    PARSER_STATUS_PFX(NO_TOKEN_FOUND),
     PARSER_STATUS_PFX(TOKENIZER_ERROR)
 } parser_status;
 
 typedef struct {
     token_status t_status;
     token_state t_state;
-    token *n, *p;
+    token *tn, *tp;
     const char *str;
 } parser_state;
 
 inline void parser_state_init(parser_state *const ps, const char *const str) {
-    ps->t_status = TOKEN_STATUS_PFX(OK);
     token_state_init(&ps->t_state);
-    ps->n = calloc(1, sizeof(token));
-    token_init(ps->n);
-    ps->p = calloc(1, sizeof(token));
-    token_init(ps->p);
+    ps->tn = calloc(1, sizeof(token));
+    token_init(ps->tn);
+    ps->tp = calloc(1, sizeof(token));
+    token_init(ps->tp);
     ps->str = str;
 }
 
-inline parser_status parser_token_get(parser_state *const ps, token *const t, bool ignore_nl, bool advance) {
-    for (;;) {
-        if ((ps->t_status = token_get(&ps->t_state, t, ps->str, advance)) != TOKEN_STATUS_PFX(OK))
-            return PARSER_STATUS_PFX(TOKENIZER_ERROR);
-        if (t->type != TOKEN_PFX(COMMENT) && (ignore_nl == true && t->type != TOKEN_PFX(NEWLINE))) break;
-    }
-    return PARSER_STATUS_PFX(OK);
-}
-
-inline parser_status parser_token_next(parser_state *const ps, bool ignore_nl) {
-    return parser_token_get(ps, ps->n, ignore_nl, true);
-}
-
-inline parser_status parser_token_peek(parser_state *const ps, bool ignore_nl) {
-    return parser_token_get(ps, ps->p, ignore_nl, false);
-}
+// parent fn holds found node and initialized to NULL
+parser_status parser_parse_exp(parser_state *const ps, parser_node **node);

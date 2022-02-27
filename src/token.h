@@ -67,26 +67,6 @@ inline void token_init(token *const t) {
     t->end_pos = 0;
 }
 
-#define TOKEN_ONE_CHAR(C, TYPE) case C: \
-    t->type = TOKEN_PFX(TYPE); \
-    break
-
-#define TOKEN_TYPE_DOUBLE_SWITCH(STR, START, PLUS, C1, C2, TYPE) case C1: \
-    switch (STR[START + PLUS]) { \
-        TOKEN_ONE_CHAR(C2, TYPE); \
-    } \
-    break
-
-#define TOKEN_TWO_CHAR(C1, C2, TYPE1, TYPE2) case C1: \
-    c = char_peek(&ts_tmp, str); \
-    if (c == C2) { \
-        t->type = TOKEN_PFX(TYPE2); \
-        advance_char_pos(&ts_tmp); \
-    } else { \
-        t->type = TOKEN_PFX(TYPE1); \
-    } \
-    break
-
 #define TOKEN_STATUS_PFX(NAME) TOKEN_STATE_##NAME
 
 typedef enum {
