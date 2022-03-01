@@ -94,6 +94,14 @@ inline parser_node *parser_node_init(parser_node_type type, parser_node_data dat
     return node;
 }
 
+inline bool parser_node_is_buf(const parser_node *const node) {
+    return node->type >= PARSER_NODE_TYPE_PFX(VAR) && node->type <= PARSER_NODE_TYPE_PFX(STRING);
+}
+
+inline bool parser_node_is_op(const parser_node *const node) {
+    return node->type >= PARSER_NODE_TYPE_PFX(ASSIGN) && node->type <= PARSER_NODE_TYPE_PFX(DIV);
+}
+
 #define PARSER_STATUS_PFX(NAME) PARSER_STATUS_PFX_##NAME
 
 typedef enum {

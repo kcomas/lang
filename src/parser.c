@@ -17,6 +17,10 @@ extern inline parser_node_fn *parser_node_fn_init(void);
 
 extern inline parser_node *parser_node_init(parser_node_type type, parser_node_data data);
 
+extern inline bool parser_node_is_buf(const parser_node *const node);
+
+extern inline bool parser_node_is_op(const parser_node *const node);
+
 extern inline void parser_state_init(parser_state *const ps, const char *const str);
 
 static parser_status parser_token_get(parser_state *const ps, token *const t, bool ignore_nl, bool advance) {
@@ -51,11 +55,12 @@ parser_status parser_parse_exp(parser_state *const ps, parser_node **node) {
     switch (ps->tn->type) {
         case TOKEN_PFX(NOTHING):
             return PARSER_STATUS_PFX(NO_TOKEN_FOUND);
-        case TOKEN_PFX(END):
-        case TOKEN_PFX(NEWLINE):
-            break;
         TOKEN_TO_BUF(VAR);
         TOKEN_TO_BUF(INT);
+        case TOKEN_PFX(END):
+        case TOKEN_PFX(NEWLINE):
+        case TOKEN_PFX(SEMICOLON):
+            break;
         TOKEN_TO_OP(ASSIGN);
         TOKEN_TO_OP(ADD);
         TOKEN_TO_OP(SUB);
