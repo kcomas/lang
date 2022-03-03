@@ -10,6 +10,7 @@ typedef enum {
     PARSER_NODE_TYPE_PFX(VAR),
     PARSER_NODE_TYPE_PFX(INT),
     PARSER_NODE_TYPE_PFX(STRING),
+    PARSER_NODE_TYPE_PFX(U64),
     PARSER_NODE_TYPE_PFX(FN),
     PARSER_NODE_TYPE_PFX(ASSIGN),
     PARSER_NODE_TYPE_PFX(DEFINE),
@@ -21,6 +22,10 @@ typedef enum {
 
 inline bool parser_node_type_is_buf(parser_node_type type) {
     return type >= PARSER_NODE_TYPE_PFX(VAR) && type <= PARSER_NODE_TYPE_PFX(STRING);
+}
+
+inline bool parser_node_type_is_type(parser_node_type type) {
+    return type >= PARSER_NODE_TYPE_PFX(U64) && type <= PARSER_NODE_TYPE_PFX(U64);
 }
 
 inline bool parser_node_type_is_op(parser_node_type type) {
@@ -55,15 +60,15 @@ inline void parser_node_list_add_item(parser_node_list *const nl, const parser_n
 }
 
 typedef struct {
-    size_t size; // size does not include null term
+    size_t len; // len does not include null term
     char buf[]; // must be null termed
 } parser_node_buf;
 
 inline parser_node_buf *parser_node_buf_init(const token *const t, const char *const str) {
-    size_t size = t->end_pos - t->start_pos + 1; // conform to token length
-    parser_node_buf *b = calloc(1, sizeof(parser_node_buf) + sizeof(char) * size + sizeof(char)); // null byte
-    b->size = size;
-    memcpy(b->buf, str + t->start_pos, b->size);
+    size_t len = t->end_pos - t->start_pos + 1; // conform to token length
+    parser_node_buf *b = calloc(1, sizeof(parser_node_buf) + sizeof(char) * len + sizeof(char)); // null byte
+    memcpy(b->buf, str + t->start_pos, len);
+    b->len = len;
     return b;
 }
 
@@ -121,7 +126,8 @@ typedef enum {
     PARSER_STATUS_PFX(OK),
     PARSER_STATUS_PFX(NO_TOKEN_FOUND),
     PARSER_STATUS_PFX(TOKENIZER_ERROR),
-    PARSER_STATUS_PFX(NODE_FOR_BUF_NOT_NULL)
+    PARSER_STATUS_PFX(NODE_FOR_BUF_NOT_NULL),
+    PARSER_STATUS_PFX(NODE_FOR_TYPE_NOT_NULL)
 } parser_status;
 
 typedef struct {

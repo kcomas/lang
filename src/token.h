@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <string.h>
 
 #define TOKEN_PFX(NAME) TOKEN_##NAME
 
