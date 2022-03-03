@@ -16,7 +16,7 @@ extern inline void parser_node_buf_free(parser_node_buf *buf);
 // previous node must be null to stop to bufs from being next to each other
 #define TOKEN_TO_BUF(TYPE) case TOKEN_PFX(TYPE): \
     if (*node != NULL) return PARSER_STATUS_PFX(NODE_FOR_BUF_NOT_NULL); \
-    *node = parser_node_init(PARSER_NODE_TYPE_PFX(TYPE), (parser_node_data) { .buf = parser_node_buf_init(&ps->tn, ps->str) }); \
+    *node = parser_node_init(PARSER_NODE_TYPE_PFX(TYPE), &ps->tn, (parser_node_data) { .buf = parser_node_buf_init(&ps->tn, ps->str) }); \
     return parser_parse_exp(ps, node)
 
 extern inline parser_node_op *parser_node_op_init(void);
@@ -24,14 +24,14 @@ extern inline parser_node_op *parser_node_op_init(void);
 extern inline void parser_node_op_free(parser_node_op *op);
 
 #define TOKEN_TO_OP(TYPE) case TOKEN_PFX(TYPE): \
-    tmp_node = parser_node_init(PARSER_NODE_TYPE_PFX(TYPE), (parser_node_data) { .op = parser_node_op_init() }); \
+    tmp_node = parser_node_init(PARSER_NODE_TYPE_PFX(TYPE), &ps->tn, (parser_node_data) { .op = parser_node_op_init() }); \
     tmp_node->data.op->left = *node; \
     *node = tmp_node; \
     return parser_parse_exp(ps, &tmp_node->data.op->right)
 
 extern inline parser_node_fn *parser_node_fn_init(void);
 
-extern inline parser_node *parser_node_init(parser_node_type type, parser_node_data data);
+extern inline parser_node *parser_node_init(parser_node_type type, const token *const t, parser_node_data data);
 
 void parser_node_free(parser_node *node) {
     if (node == NULL) return;
@@ -58,7 +58,7 @@ void parser_node_free(parser_node *node) {
 
 #define TOKEN_TO_TYPE(TYPE) case TOKEN_PFX(TYPE): \
     if (*node != NULL) return PARSER_STATUS_PFX(NODE_FOR_TYPE_NOT_NULL); \
-    *node = parser_node_init(PARSER_NODE_TYPE_PFX(TYPE), (parser_node_data) {}); \
+    *node = parser_node_init(PARSER_NODE_TYPE_PFX(TYPE), &ps->tn, (parser_node_data) {}); \
     return parser_parse_exp(ps, node);
 
 extern inline void parser_state_init(parser_state *const ps, const char *const str);

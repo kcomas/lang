@@ -110,11 +110,14 @@ typedef union {
 
 typedef struct _parser_node {
     parser_node_type type;
+    size_t line_no, char_no; // used for errors in ast/infer
     parser_node_data data;
 } parser_node; // one created never mutate
 
-inline parser_node *parser_node_init(parser_node_type type, parser_node_data data) {
+inline parser_node *parser_node_init( parser_node_type type, const token *const t, parser_node_data data ) {
     parser_node *node = calloc(1, sizeof(parser_node));
+    node->line_no = t->line_no;
+    node->char_no = t->char_no;
     node->type = type;
     node->data = data;
     return node;
