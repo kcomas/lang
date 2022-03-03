@@ -22,9 +22,9 @@ static parser_node *buf_node(parser_node_type type, const char *const data) {
 static bool verify_expr(const parser_node *const target, const parser_node *const test) {
     if (target == NULL && test == NULL) return true;
     if (target->type != test->type) return false;
-    if (parser_node_is_op(target) == true) {
+    if (parser_node_type_is_op(target->type) == true) {
         if (verify_expr(target->data.op->left, test->data.op->left) == false || verify_expr(target->data.op->right, target->data.op->right) == false) return false;
-    } else if (parser_node_is_buf(target) == true) {
+    } else if (parser_node_type_is_buf(target->type) == true) {
         if (strcmp(target->data.buf->buf, test->data.buf->buf) !=0) return false;
     } else {
         return false;
@@ -32,18 +32,23 @@ static bool verify_expr(const parser_node *const target, const parser_node *cons
     return true;
 }
 
+#define PARSER_TEST_INIT(PARSER_FN, STR) parser_state ps; \
+    parser_status status; \
+    parser_node *root = NULL; \
+    parser_state_init(&ps, STR); \
+    if ((status = PARSER_FN(&ps, &root)) != PARSER_STATUS_PFX(OK)) TEST_FAIL(); \
+    if (ps.tn.type != TOKEN_PFX(END)) TEST_FAIL()
+
+#define PARSER_TEST_VERIFY(TEST_NODE) if (verify_expr(root, test) == false) TEST_FAIL(); \
+    parser_node_free(root); \
+    parser_node_free(TEST_NODE)
+
 TEST(arith_with_comment) {
-    char *str = "abc: 1 + 2 * 3 - 45 / 67 // this is a comment";
-    parser_state ps;
-    parser_status status;
-    parser_state_init(&ps, str);
-    parser_node *root;
-    if ((status = parser_parse_exp(&ps, &root)) != PARSER_STATUS_PFX(OK)) TEST_FAIL();
-    if (ps.tn->type != TOKEN_PFX(END)) TEST_FAIL();
+    PARSER_TEST_INIT(parser_parse_exp, "abc: 1 + 2 * 3 - 45 / 67 // this is a comment");
     parser_node *d = OP_NODE(DIV, BUF_NODE(INT, 45), BUF_NODE(INT, 67));
     parser_node *mul = OP_NODE(MUL, BUF_NODE(INT, 2), OP_NODE(SUB, BUF_NODE(INT, 3), d));
-    parser_node *assign = OP_NODE(ASSIGN, BUF_NODE(VAR, abc), OP_NODE(ADD, BUF_NODE(INT, 1), mul));
-    if (verify_expr(root, assign) == false) TEST_FAIL();
+    parser_node *test = OP_NODE(ASSIGN, BUF_NODE(VAR, abc), OP_NODE(ADD, BUF_NODE(INT, 1), mul));
+    PARSER_TEST_VERIFY(test);
 }
 
 INIT_TESTS(

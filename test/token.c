@@ -42,6 +42,16 @@ TEST(arith_with_comment) {
     TOKEN_ASSERT(END, 1, 46, 45, 45);
 }
 
+TEST(define_var_u64) {
+    TOKEN_TEST_INIT("usixfour::u64: 12345");
+    TOKEN_ASSERT(VAR, 1, 1, 0, 7);
+    TOKEN_ASSERT(DEFINE, 1, 9, 8, 9);
+    TOKEN_ASSERT(U64, 1, 11, 10, 12);
+    TOKEN_ASSERT(ASSIGN, 1, 14, 13, 13);
+    TOKEN_ASSERT(INT, 1, 16, 15, 19);
+    TOKEN_ASSERT(END, 1, 21, 20, 20);
+}
+
 TEST(fac_file) {
     char *file_str;
     file_status status = file_to_c_string("./examples/fac.lang", &file_str);
@@ -118,5 +128,6 @@ TEST(fac_file) {
 
 INIT_TESTS(
     ADD_TEST(arith_with_comment);
+    ADD_TEST(define_var_u64);
     ADD_TEST(fac_file);
 )

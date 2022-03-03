@@ -11,7 +11,6 @@ typedef enum {
     TOKEN_PFX(NOTHING),
     TOKEN_PFX(VAR),
     TOKEN_PFX(INT),
-    TOKEN_PFX(FLOAT),
     TOKEN_PFX(STRING),
     TOKEN_PFX(U1),
     TOKEN_PFX(U8),
