@@ -46,7 +46,7 @@ void parser_node_free(parser_node *node) {
         case PARSER_NODE_TYPE_PFX(U64):
         case PARSER_NODE_TYPE_PFX(FN):
             break;
-        case PARSER_NODE_TYPE_PFX(CALL):
+        case PARSER_NODE_TYPE_PFX(PARENS):
             // TODO free list
             break;
         case  PARSER_NODE_TYPE_PFX(ASSIGN):
@@ -94,11 +94,9 @@ static parser_status parser_token_peek(parser_state *const ps, bool ignore_nl) {
 
 typedef bool stmt_token_type_stop(token_type type);
 
-parser_status parser_parse_stmt(parser_state *const ps, parser_node **node, stmt_token_type_stop *stop_fn) {
+static parser_status parser_parse_stmt(parser_state *const ps, parser_node **node, stmt_token_type_stop *stop_fn) {
     parser_status status;
     parser_node *tmp_node;
-    if (*node != NULL) return PARSER_STATUS_PFX(NODE_FOR_STMT_NOT_NULL);
-    *node = parser_node_init(PARSER_NODE_TYPE_PFX(CALL), &ps->tn, (parser_node_data) { .list = parser_node_list_init() });
     for (;;) {
         tmp_node = NULL;
         if ((status = parser_parse_expr(ps, &tmp_node)) != PARSER_STATUS_PFX(OK)) return status;
@@ -109,23 +107,25 @@ parser_status parser_parse_stmt(parser_state *const ps, parser_node **node, stmt
     return PARSER_STATUS_PFX(OK);
 }
 
-bool call_token_type_stop(token_type type) {
+bool parens_token_type_stop(token_type type) {
     return type == TOKEN_PFX(RPARENS) || type == TOKEN_PFX(NEWLINE); // stop \n separation
 }
 
-parser_status parser_parse_call(parser_state *const ps, parser_node **node) {
+static parser_status parser_parse_parens(parser_state *const ps, parser_node **node) {
     // at (
     parser_status status;
-    if ((status = parser_parse_stmt(ps, node, &call_token_type_stop)) != PARSER_STATUS_PFX(OK)) return status;
+    if (*node != NULL) return PARSER_STATUS_PFX(NODE_FOR_STMT_NOT_NULL);
+    *node = parser_node_init(PARSER_NODE_TYPE_PFX(PARENS), &ps->tn, (parser_node_data) { .list = parser_node_list_init() });
+    if ((status = parser_parse_stmt(ps, node, &parens_token_type_stop)) != PARSER_STATUS_PFX(OK)) return status;
     // make sure ) was reached
-    if (ps->tn.type != TOKEN_PFX(RPARENS)) return PARSER_STATUS_PFX(INVALID_CALL);
+    if (ps->tn.type != TOKEN_PFX(RPARENS)) return PARSER_STATUS_PFX(INVALID_PARENS);
     return parser_parse_expr(ps, node);
 }
 
 parser_status parser_parse_expr(parser_state *const ps, parser_node **node) {
     parser_status status;
     parser_node *tmp_node = NULL;
-    TOKEN_NEXT(false); // expr ends at \n
+    TOKEN_NEXT(false);
     switch (ps->tn.type) {
         case TOKEN_PFX(NOTHING):
             return PARSER_STATUS_PFX(NO_TOKEN_FOUND);
@@ -137,7 +137,7 @@ parser_status parser_parse_expr(parser_state *const ps, parser_node **node) {
         case TOKEN_PFX(SEMICOLON):
             break;
         case TOKEN_PFX(LPARENS):
-            return parser_parse_call(ps, node);
+            return parser_parse_parens(ps, node);
         case TOKEN_PFX(RPARENS):
             break;
         TOKEN_TO_OP(ASSIGN);
