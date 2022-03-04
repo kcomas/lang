@@ -52,6 +52,21 @@ TEST(define_var_u64) {
     TOKEN_ASSERT(END, 1, 21, 20, 20);
 }
 
+TEST(add_fn_call) {
+    TOKEN_TEST_INIT("a: +(1;3 - 2)");
+    TOKEN_ASSERT(VAR, 1, 1, 0, 0);
+    TOKEN_ASSERT(ASSIGN, 1, 2, 1, 1);
+    TOKEN_ASSERT(ADD, 1, 4, 3, 3);
+    TOKEN_ASSERT(LPARENS, 1, 5, 4, 4);
+    TOKEN_ASSERT(INT, 1, 6, 5, 5);
+    TOKEN_ASSERT(SEMICOLON, 1, 7, 6, 6);
+    TOKEN_ASSERT(INT, 1, 8, 7, 7);
+    TOKEN_ASSERT(SUB, 1, 10, 9, 9);
+    TOKEN_ASSERT(INT, 1, 12, 11, 11);
+    TOKEN_ASSERT(RPARENS, 1, 13, 12, 12);
+    TOKEN_ASSERT(END, 1, 14, 13, 13);
+}
+
 TEST(fac_file) {
     char *file_str;
     file_status status = file_to_c_string("./examples/fac.lang", &file_str);
@@ -128,5 +143,6 @@ TEST(fac_file) {
 INIT_TESTS(
     ADD_TEST(arith_with_comment);
     ADD_TEST(define_var_u64);
+    ADD_TEST(add_fn_call);
     ADD_TEST(fac_file);
 )

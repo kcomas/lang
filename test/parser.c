@@ -49,7 +49,7 @@ static bool verify_expr(const parser_node *const target, const parser_node *cons
     parser_node_free(TEST_NODE)
 
 TEST(arith_with_comment) {
-    PARSER_TEST_INIT(parser_parse_exp, "abc: 1 + 2 * 3 - 45 / 67 // this is a comment");
+    PARSER_TEST_INIT(parser_parse_expr, "abc: 1 + 2 * 3 - 45 / 67 // this is a comment");
     parser_node *d = OP_NODE(DIV, BUF_NODE(INT, 45), BUF_NODE(INT, 67));
     parser_node *mul = OP_NODE(MUL, BUF_NODE(INT, 2), OP_NODE(SUB, BUF_NODE(INT, 3), d));
     parser_node *test = OP_NODE(ASSIGN, BUF_NODE(VAR, abc), OP_NODE(ADD, BUF_NODE(INT, 1), mul));
@@ -57,12 +57,18 @@ TEST(arith_with_comment) {
 }
 
 TEST(define_var_u64) {
-    PARSER_TEST_INIT(parser_parse_exp, "usixfour::u64: 12345");
+    PARSER_TEST_INIT(parser_parse_expr, "usixfour::u64: 12345");
     parser_node *test = OP_NODE(DEFINE, BUF_NODE(VAR, usixfour), OP_NODE(ASSIGN, TYPE_NODE(U64), BUF_NODE(INT, 12345)));
     PARSER_TEST_VERIFY(test);
 }
 
+TEST(add_fn_call) {
+    PARSER_TEST_INIT(parser_parse_expr, "a: +(1;3 - 2)");
+}
+
+
 INIT_TESTS(
     ADD_TEST(arith_with_comment);
     ADD_TEST(define_var_u64);
+    ADD_TEST(add_fn_call);
 )

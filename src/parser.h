@@ -12,6 +12,7 @@ typedef enum {
     PARSER_NODE_TYPE_PFX(STRING),
     PARSER_NODE_TYPE_PFX(U64),
     PARSER_NODE_TYPE_PFX(FN),
+    PARSER_NODE_TYPE_PFX(CALL),
     PARSER_NODE_TYPE_PFX(ASSIGN),
     PARSER_NODE_TYPE_PFX(DEFINE),
     PARSER_NODE_TYPE_PFX(ADD),
@@ -45,6 +46,10 @@ typedef struct _parser_node_list {
     size_t len;
     parser_node_list_item *head, *tail;
 } parser_node_list;
+
+inline parser_node_list *parser_node_list_init(void) {
+    return calloc(1, sizeof(parser_node_list));
+}
 
 inline void parser_node_list_add_item(parser_node_list *const nl, const parser_node *const node) {
     parser_node_list_item *item = calloc(1, sizeof(parser_node_list_item));
@@ -103,6 +108,7 @@ inline parser_node_fn *parser_node_fn_init(void) {
 }
 
 typedef union {
+    parser_node_list *list;
     parser_node_buf *buf;
     parser_node_op *op;
     parser_node_fn *fn;
@@ -130,7 +136,9 @@ typedef enum {
     PARSER_STATUS_PFX(NO_TOKEN_FOUND),
     PARSER_STATUS_PFX(TOKENIZER_ERROR),
     PARSER_STATUS_PFX(NODE_FOR_BUF_NOT_NULL),
-    PARSER_STATUS_PFX(NODE_FOR_TYPE_NOT_NULL)
+    PARSER_STATUS_PFX(NODE_FOR_TYPE_NOT_NULL),
+    PARSER_STATUS_PFX(NODE_FOR_STMT_NOT_NULL),
+    PARSER_STATUS_PFX(INVALID_CALL)
 } parser_status;
 
 typedef struct {
@@ -148,4 +156,4 @@ inline void parser_state_init(parser_state *const ps, const char *const str) {
 }
 
 // parent fn holds found node and initialized to NULL
-parser_status parser_parse_exp(parser_state *const ps, parser_node **node);
+parser_status parser_parse_expr(parser_state *const ps, parser_node **node);
