@@ -64,6 +64,8 @@ TEST(define_var_u64) {
 
 TEST(add_fn_call) {
     PARSER_TEST_INIT(parser_parse_expr, "a: +(1;3 - 2)");
+    // TODO verify parser node
+    parser_node_free(root);
 }
 
 

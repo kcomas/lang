@@ -9,7 +9,9 @@ extern inline bool parser_node_type_is_op(parser_node_type type);
 
 extern inline parser_node_list *parser_node_list_init(void);
 
-extern inline void parser_node_list_add_item(parser_node_list *const nl, const parser_node *const node);
+extern inline void parser_node_list_free(parser_node_list *list);
+
+extern inline void parser_node_list_add_item(parser_node_list *const nl, parser_node *const node);
 
 extern inline parser_node_buf *parser_node_buf_init(const token *const t, const char *const str);
 
@@ -47,7 +49,7 @@ void parser_node_free(parser_node *node) {
         case PARSER_NODE_TYPE_PFX(FN):
             break;
         case PARSER_NODE_TYPE_PFX(PARENS):
-            // TODO free list
+            parser_node_list_free(node->data.list);
             break;
         case  PARSER_NODE_TYPE_PFX(ASSIGN):
         case  PARSER_NODE_TYPE_PFX(DEFINE):
