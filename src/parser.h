@@ -12,7 +12,7 @@ typedef enum {
     PARSER_NODE_TYPE_PFX(STRING),
     PARSER_NODE_TYPE_PFX(U64),
     PARSER_NODE_TYPE_PFX(FN),
-    PARSER_NODE_TYPE_PFX(PARENS),
+    PARSER_NODE_TYPE_PFX(CALL),
     PARSER_NODE_TYPE_PFX(ASSIGN),
     PARSER_NODE_TYPE_PFX(DEFINE),
     PARSER_NODE_TYPE_PFX(ADD),
@@ -47,10 +47,6 @@ typedef struct _parser_node_list {
     parser_node_list_item *head, *tail;
 } parser_node_list;
 
-inline parser_node_list *parser_node_list_init(void) {
-    return calloc(1, sizeof(parser_node_list));
-}
-
 inline void parser_node_list_free(parser_node_list *list) {
     parser_node_list_item *head = list->head;
     while (head != NULL) {
@@ -59,7 +55,6 @@ inline void parser_node_list_free(parser_node_list *list) {
         parser_node_free(tmp->node);
         free(tmp);
     }
-    free(list);
 }
 
 inline void parser_node_list_add_item(parser_node_list *const nl, parser_node *const node) {
@@ -92,6 +87,35 @@ inline void parser_node_buf_free(parser_node_buf *buf) {
     free(buf);
 }
 
+#define MAX_ARGS 8
+
+typedef struct {
+    parser_node *return_type;
+    parser_node_list args;
+    parser_node_list body;
+} parser_node_fn;
+
+inline parser_node_fn *parser_node_fn_init(void) {
+    return calloc(1, sizeof(parser_node_fn));
+}
+
+typedef struct {
+    parser_node *fn;
+    parser_node_list args;
+} parser_node_call;
+
+inline parser_node_call *parser_node_call_init(parser_node *fn) {
+    parser_node_call *call = calloc(1, sizeof(parser_node_call));
+    call->fn = fn;
+    return call;
+}
+
+inline void parser_node_call_free(parser_node_call *call) {
+    parser_node_free(call->fn);
+    parser_node_list_free(&call->args);
+    free(call);
+}
+
 typedef struct {
     parser_node *left, *right;
 } parser_node_op;
@@ -106,23 +130,11 @@ inline void parser_node_op_free(parser_node_op *op) {
     free(op);
 }
 
-#define MAX_ARGS 8
-
-typedef struct {
-    parser_node *return_type;
-    parser_node_list args;
-    parser_node_list body;
-} parser_node_fn;
-
-inline parser_node_fn *parser_node_fn_init(void) {
-    return calloc(1, sizeof(parser_node_fn));
-}
-
 typedef union {
-    parser_node_list *list;
     parser_node_buf *buf;
     parser_node_op *op;
     parser_node_fn *fn;
+    parser_node_call *call;
 } parser_node_data;
 
 typedef struct _parser_node {
@@ -149,7 +161,8 @@ typedef enum {
     PARSER_STATUS_PFX(NODE_FOR_BUF_NOT_NULL),
     PARSER_STATUS_PFX(NODE_FOR_TYPE_NOT_NULL),
     PARSER_STATUS_PFX(NODE_FOR_STMT_NOT_NULL),
-    PARSER_STATUS_PFX(INVALID_PARENS)
+    PARSER_STATUS_PFX(NODE_FOR_CALL_NOT_NULL),
+    PARSER_STATUS_PFX(INVALID_CALL)
 } parser_status;
 
 typedef struct {
