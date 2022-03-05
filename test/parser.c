@@ -91,8 +91,8 @@ TEST(arith_with_comment) {
 }
 
 TEST(define_var_u64) {
-    PARSER_INIT(parser_parse_expr, "usixfour::u64: 12345");
-    parser_node *test = OP_NODE(DEFINE, BUF_NODE(VAR, usixfour), OP_NODE(ASSIGN, TYPE_NODE(U64), BUF_NODE(INT, 12345)));
+    PARSER_INIT(parser_parse_expr, "u64::sixfour: 12345");
+    parser_node *test = OP_NODE(ASSIGN, OP_NODE(DEFINE, TYPE_NODE(U64), BUF_NODE(VAR, usixfour)), BUF_NODE(INT, 12345));
     PARSER_TEST_VERIFY(test);
 }
 

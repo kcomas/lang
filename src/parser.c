@@ -30,6 +30,7 @@ extern inline void parser_node_buf_free(parser_node_buf *buf);
         return parser_parse_expr(ps, node); \
     } while(0)
 
+
 #define TOKEN_TO_BUF(TYPE) \
     TOKEN_PREV_MAYBE_OP(TYPE, parser_node_init(PARSER_NODE_TYPE_PFX(TYPE), &ps->tn, (parser_node_data) { .buf = parser_node_buf_init(&ps->tn, ps->str) }), NODE_FOR_BUF_NOT_NULL)
 
@@ -162,7 +163,19 @@ parser_status parser_parse_expr(parser_state *const ps, parser_node **node) {
         case TOKEN_PFX(RPARENS):
             break;
         TOKEN_TO_OP(ASSIGN);
-        TOKEN_TO_OP(DEFINE);
+        case TOKEN_PFX(DEFINE):
+            tmp_node = parser_node_init(PARSER_NODE_TYPE_PFX(DEFINE), &ps->tn, (parser_node_data) { .op = parser_node_op_init() });
+            TOKEN_PEEK(false);
+            if (ps->tp.type == TOKEN_PFX(VAR)) {
+                TOKEN_NEXT(false); // at var
+                tmp_node->data.op->right = parser_node_init(PARSER_NODE_TYPE_PFX(VAR), &ps->tn, (parser_node_data) { .buf = parser_node_buf_init(&ps->tn, ps->str) });
+            } else {
+                parser_node_free(tmp_node);
+                return PARSER_STATUS_PFX(INVALID_DEFINE);
+            }
+            tmp_node->data.op->left = *node;
+            *node = tmp_node;
+            return parser_parse_expr(ps, node);
         TOKEN_TO_OP(ADD);
         TOKEN_TO_OP(SUB);
         TOKEN_TO_OP(MUL);
