@@ -65,7 +65,7 @@ static bool verify_expr(const parser_node *const a, const parser_node *const b) 
         if (verify_list(&a->data.call->args, &b->data.call->args) == false) return false;
         return true;
     } else if (parser_node_type_is_op(a->type) == true) {
-        if (verify_expr(a->data.op->left, b->data.op->left) == true && verify_expr(a->data.op->right, a->data.op->right) == true) return true;
+        if (verify_expr(a->data.op->left, b->data.op->left) == true && verify_expr(a->data.op->right, b->data.op->right) == true) return true;
     }
     return false;
 }
@@ -91,7 +91,7 @@ TEST(arith_with_comment) {
 }
 
 TEST(define_var_u64) {
-    PARSER_INIT(parser_parse_expr, "u64::sixfour: 12345");
+    PARSER_INIT(parser_parse_expr, "u64::usixfour: 12345");
     parser_node *test = OP_NODE(ASSIGN, OP_NODE(DEFINE, TYPE_NODE(U64), BUF_NODE(VAR, usixfour)), BUF_NODE(INT, 12345));
     PARSER_TEST_VERIFY(test);
 }

@@ -20,10 +20,9 @@ extern inline void parser_node_buf_free(parser_node_buf *buf);
     do { \
         if (*node == NULL) { \
             *node = INIT; \
-        } else if (parser_node_type_is_op((*node)->type)) { \
-            tmp_node = INIT; \
-            (*node)->data.op->right = tmp_node; \
-            *node = tmp_node; \
+        } else if (parser_node_type_is_op((*node)->type) && parser_node_op_empty((*node)->data.op)) { \
+            (*node)->data.op->right = INIT; \
+            node = &(*node)->data.op->right; \
         } else { \
             return PARSER_STATUS_PFX(ERROR); \
         } \
@@ -47,7 +46,9 @@ extern inline parser_node_op *parser_node_op_init(void);
 
 extern inline void parser_node_op_free(parser_node_op *op);
 
-// if the left side is null get left side as monadic
+extern inline bool parser_node_op_empty(const parser_node_op *const op);
+
+// if the left side is null get right side as monadic
 #define TOKEN_TO_OP(TYPE) case TOKEN_PFX(TYPE): \
     tmp_node = parser_node_init(PARSER_NODE_TYPE_PFX(TYPE), &ps->tn, (parser_node_data) { .op = parser_node_op_init() }); \
     tmp_node->data.op->left = *node; \

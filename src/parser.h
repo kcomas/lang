@@ -130,6 +130,10 @@ inline void parser_node_op_free(parser_node_op *op) {
     free(op);
 }
 
+inline bool parser_node_op_empty(const parser_node_op *const op) {
+    return op->left == NULL && op->right == NULL;
+}
+
 typedef union {
     parser_node_buf *buf;
     parser_node_op *op;
