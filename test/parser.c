@@ -103,9 +103,15 @@ TEST(add_fn_call) {
     PARSER_TEST_VERIFY(test);
 }
 
+TEST(negate) {
+    PARSER_INIT(parser_parse_expr, "a: - 1 + 2");
+    parser_node *test = OP_NODE(ASSIGN, BUF_NODE(VAR, a), OP_NODE(SUB, NULL, OP_NODE(ADD, BUF_NODE(INT, 1), BUF_NODE(INT, 2))));
+    PARSER_TEST_VERIFY(test);
+}
 
 INIT_TESTS(
     ADD_TEST(arith_with_comment);
     ADD_TEST(define_var_u64);
     ADD_TEST(add_fn_call);
+    ADD_TEST(negate);
 )

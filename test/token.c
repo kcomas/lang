@@ -69,6 +69,17 @@ TEST(add_fn_call) {
     TOKEN_ASSERT(END, 1, 18, 17, 17);
 }
 
+TEST(negate) {
+    TOKEN_TEST_INIT("a: - 1 + 2");
+    TOKEN_ASSERT(VAR, 1, 1, 0, 0);
+    TOKEN_ASSERT(ASSIGN, 1, 2, 1, 1);
+    TOKEN_ASSERT(SUB, 1, 4, 3, 3);
+    TOKEN_ASSERT(INT, 1, 6, 5, 5);
+    TOKEN_ASSERT(ADD, 1, 8, 7, 7);
+    TOKEN_ASSERT(INT, 1, 10, 9, 9);
+    TOKEN_ASSERT(END, 1, 11, 10, 10);
+}
+
 TEST(fac_file) {
     char *file_str;
     file_status status = file_to_c_string("./examples/fac.lang", &file_str);
@@ -146,5 +157,6 @@ INIT_TESTS(
     ADD_TEST(arith_with_comment);
     ADD_TEST(define_var_u64);
     ADD_TEST(add_fn_call);
+    ADD_TEST(negate);
     ADD_TEST(fac_file);
 )

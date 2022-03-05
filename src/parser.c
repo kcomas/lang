@@ -15,11 +15,26 @@ extern inline parser_node_buf *parser_node_buf_init(const token *const t, const 
 
 extern inline void parser_node_buf_free(parser_node_buf *buf);
 
-// previous node must be null to stop to bufs from being next to each other
-#define TOKEN_TO_BUF(TYPE) case TOKEN_PFX(TYPE): \
-    if (*node != NULL) return PARSER_STATUS_PFX(NODE_FOR_BUF_NOT_NULL); \
-    *node = parser_node_init(PARSER_NODE_TYPE_PFX(TYPE), &ps->tn, (parser_node_data) { .buf = parser_node_buf_init(&ps->tn, ps->str) }); \
-    return parser_parse_expr(ps, node)
+// previous node must be null or monadic op stop to bufs and types from being next to each other
+#define TOKEN_PREV_MAYBE_OP(TYPE, INIT, ERROR) case TOKEN_PFX(TYPE): \
+    do { \
+        if (*node == NULL) { \
+            *node = INIT; \
+        } else if (parser_node_type_is_op((*node)->type)) { \
+            tmp_node = INIT; \
+            (*node)->data.op->right = tmp_node; \
+            *node = tmp_node; \
+        } else { \
+            return PARSER_STATUS_PFX(ERROR); \
+        } \
+        return parser_parse_expr(ps, node); \
+    } while(0)
+
+#define TOKEN_TO_BUF(TYPE) \
+    TOKEN_PREV_MAYBE_OP(TYPE, parser_node_init(PARSER_NODE_TYPE_PFX(TYPE), &ps->tn, (parser_node_data) { .buf = parser_node_buf_init(&ps->tn, ps->str) }), NODE_FOR_BUF_NOT_NULL)
+
+#define TOKEN_TO_TYPE(TYPE) \
+    TOKEN_PREV_MAYBE_OP(TYPE, parser_node_init(PARSER_NODE_TYPE_PFX(TYPE), &ps->tn, (parser_node_data) {}), NODE_FOR_TYPE_NOT_NULL)
 
 extern inline parser_node_fn *parser_node_fn_init(void);
 
@@ -66,11 +81,6 @@ void parser_node_free(parser_node *node) {
     }
     free(node);
 }
-
-#define TOKEN_TO_TYPE(TYPE) case TOKEN_PFX(TYPE): \
-    if (*node != NULL) return PARSER_STATUS_PFX(NODE_FOR_TYPE_NOT_NULL); \
-    *node = parser_node_init(PARSER_NODE_TYPE_PFX(TYPE), &ps->tn, (parser_node_data) {}); \
-    return parser_parse_expr(ps, node);
 
 extern inline void parser_state_init(parser_state *const ps, const char *const str);
 
@@ -125,8 +135,10 @@ static parser_status parser_parse_call(parser_state *const ps, parser_node **nod
     parser_node_call *call = parser_node_call_init(*node);
     if ((status = parser_parse_stmt(ps, &call->args, &call_token_type_stop)) != PARSER_STATUS_PFX(OK)) return status;
     // make sure ) was reached
-    // TODO free call if error
-    if (ps->tn.type != TOKEN_PFX(RPARENS)) return PARSER_STATUS_PFX(INVALID_CALL);
+    if (ps->tn.type != TOKEN_PFX(RPARENS)) {
+        parser_node_call_free(call);
+        return PARSER_STATUS_PFX(INVALID_CALL);
+    }
     *node = parser_node_init(PARSER_NODE_TYPE_PFX(CALL), &t_tmp, (parser_node_data) { .call = call });
     return parser_parse_expr(ps, node);
 }
