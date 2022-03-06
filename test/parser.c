@@ -55,7 +55,7 @@ static bool verify_list(const parser_node_list *const a, const parser_node_list 
     ah = a->head;
     bh = b->head;
     while (ah != NULL && bh != NULL) {
-        if (verify_expr(ah->node, bh->node) == false) return false;
+        if (verify_expr(ah->node, bh->node)) return false;
         ah = ah->next;
         bh = bh->next;
         if ((ah == NULL && bh != NULL) || (ah != NULL && bh == NULL)) return false;
@@ -66,20 +66,20 @@ static bool verify_list(const parser_node_list *const a, const parser_node_list 
 static bool verify_expr(const parser_node *const a, const parser_node *const b) {
     if (a == NULL && b == NULL) return true;
     if (a->type != b->type) return false;
-    if (parser_node_type_is_buf(a->type) == true) {
+    if (parser_node_type_is_buf(a->type)) {
         if (a->data.buf->len == b->data.buf->len && strcmp(a->data.buf->buf, b->data.buf->buf) == 0) return true;
-    } else if (parser_node_type_is_type(a->type) == true) {
+    } else if (parser_node_type_is_type(a->type)) {
         return true;
     } else if (a->type == PARSER_NODE_TYPE_PFX(FN)) {
-            if (verify_list(&a->data.fn->args, &b->data.fn->args) == false) return false;
-            if (verify_list(&a->data.fn->body, &b->data.fn->body) == false) return false;
+            if (!verify_list(&a->data.fn->args, &b->data.fn->args)) return false;
+            if (!verify_list(&a->data.fn->body, &b->data.fn->body)) return false;
             return true;
     } else if (a->type == PARSER_NODE_TYPE_PFX(CALL)) {
-        if (verify_expr(a->data.call->caller, b->data.call->caller) == false) return false;
-        if (verify_list(&a->data.call->args, &b->data.call->args) == false) return false;
+        if (!verify_expr(a->data.call->caller, b->data.call->caller)) return false;
+        if (!verify_list(&a->data.call->args, &b->data.call->args)) return false;
         return true;
-    } else if (parser_node_type_is_op(a->type) == true) {
-        if (verify_expr(a->data.op->left, b->data.op->left) == true && verify_expr(a->data.op->right, b->data.op->right) == true) return true;
+    } else if (!parser_node_type_is_op(a->type)) {
+        if (verify_expr(a->data.op->left, b->data.op->left) && verify_expr(a->data.op->right, b->data.op->right)) return true;
     }
     return false;
 }
@@ -92,7 +92,7 @@ static bool verify_expr(const parser_node *const a, const parser_node *const b) 
     if (PARSER_FN(&ps, &root) != PARSER_STATUS_PFX(OK)) TEST_FAIL(); \
     if (ps.tn.type != TOKEN_PFX(END)) TEST_FAIL()
 
-#define PARSER_TEST_VERIFY(TEST_NODE) if (verify_expr(root, TEST_NODE) == false) TEST_FAIL(); \
+#define PARSER_TEST_VERIFY(TEST_NODE) if (verify_expr(root, TEST_NODE)) TEST_FAIL(); \
     parser_node_free(root); \
     parser_node_free(TEST_NODE)
 

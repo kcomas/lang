@@ -61,13 +61,8 @@ inline void parser_node_list_free(parser_node_list *list) {
 inline void parser_node_list_add_item(parser_node_list *const nl, parser_node *const node) {
     parser_node_list_item *item = calloc(1, sizeof(parser_node_list_item));
     item->node = node;
-    if (nl->head == NULL) {
-        nl->head = item;
-        nl->tail = nl->head;
-    } else {
-        nl->tail->next = item;
-        nl->tail = nl->tail->next;
-    }
+    if (nl->head == NULL) nl->head = nl->tail = item;
+    else nl->tail = nl->tail->next = item;
     nl->len++;
 }
 
