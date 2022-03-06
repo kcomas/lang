@@ -106,18 +106,18 @@ inline void parser_node_fn_free(parser_node_fn *fn) {
 }
 
 typedef struct {
-    parser_node *fn;
+    parser_node *caller;
     parser_node_list args;
 } parser_node_call;
 
-inline parser_node_call *parser_node_call_init(parser_node *fn) {
+inline parser_node_call *parser_node_call_init(parser_node *caller) {
     parser_node_call *call = calloc(1, sizeof(parser_node_call));
-    call->fn = fn;
+    call->caller = caller;
     return call;
 }
 
 inline void parser_node_call_free(parser_node_call *call) {
-    parser_node_free(call->fn);
+    parser_node_free(call->caller);
     parser_node_list_free(&call->args);
     free(call);
 }

@@ -1,7 +1,14 @@
 
-#include <stdarg.h>
 #include "test.h"
 #include "../src/parser.h"
+
+#define NODE_LIST(NODES...) ((parser_node*[]) {NODES})
+
+#define ADD_TO_LIST(LIST_TGT, LEN, LIST)  do { \
+    for (size_t i = 0; i < LEN; i++) { \
+        parser_node_list_add_item(LIST_TGT, LIST[i]); \
+    } \
+} while(0)
 
 static parser_node *buf_node(parser_node_type type, const token *const t_ignore, const char *const data) {
     size_t len = strlen(data);
@@ -15,26 +22,29 @@ static parser_node *buf_node(parser_node_type type, const token *const t_ignore,
 
 #define TYPE_NODE(TYPE) parser_node_init(PARSER_NODE_TYPE_PFX(TYPE), &t_ignore, (parser_node_data) {})
 
+static parser_node *fn_node(const token *const t_ignore, size_t arg_len, parser_node *const args[], size_t body_len, parser_node *const body[]) {
+    parser_node_fn *fn = parser_node_fn_init();
+    ADD_TO_LIST(&fn->args, arg_len, args);
+    ADD_TO_LIST(&fn->body, body_len, body);
+    return parser_node_init(PARSER_NODE_TYPE_PFX(FN), t_ignore, (parser_node_data) { .fn = fn });
+}
+
+#define FN_NODE(ARG_LEN, ARGS, BODY_LEN, BODY) fn_node(&t_ignore, ARG_LEN, ARGS, BODY_LEN, BODY)
+
+static parser_node *call_node(const token *const t_ignore, parser_node *const caller, size_t arg_len, parser_node *const args[]) {
+    parser_node_call *call = parser_node_call_init(caller);
+    ADD_TO_LIST(&call->args, arg_len, args);
+    return parser_node_init(PARSER_NODE_TYPE_PFX(CALL), t_ignore, (parser_node_data) { .call = call });
+}
+
+#define CALL_NODE(FN, LEN, ARGS) call_node(&t_ignore, FN, LEN, ARGS)
+
 static parser_node *op_node(parser_node_type type, const token *const t_ignore, parser_node *left, parser_node *right) {
     parser_node *node = parser_node_init(type, t_ignore, (parser_node_data) { .op = parser_node_op_init() });
     node->data.op->left = left;
     node->data.op->right = right;
     return node;
 }
-
-static parser_node *call_node(parser_node *const fn, const token *const t_ignore, size_t arg_len, ...) {
-    parser_node_call *call = parser_node_call_init(fn);
-    va_list args;
-    va_start(args, arg_len);
-    for (;;) {
-        parser_node_list_add_item(&call->args, va_arg(args, parser_node*));
-        if (--arg_len == 0) break;
-    }
-    va_end(args);
-    return parser_node_init(PARSER_NODE_TYPE_PFX(CALL), t_ignore, (parser_node_data) { .call = call });
-}
-
-#define CALL_NODE(FN, LEN, ARGS...) call_node(FN, &t_ignore, LEN, ARGS)
 
 #define OP_NODE(TYPE, LEFT, RIGHT) op_node(PARSER_NODE_TYPE_PFX(TYPE), &t_ignore, LEFT, RIGHT)
 
@@ -60,8 +70,12 @@ static bool verify_expr(const parser_node *const a, const parser_node *const b) 
         if (a->data.buf->len == b->data.buf->len && strcmp(a->data.buf->buf, b->data.buf->buf) == 0) return true;
     } else if (parser_node_type_is_type(a->type) == true) {
         return true;
+    } else if (a->type == PARSER_NODE_TYPE_PFX(FN)) {
+            if (verify_list(&a->data.fn->args, &b->data.fn->args) == false) return false;
+            if (verify_list(&a->data.fn->body, &b->data.fn->body) == false) return false;
+            return true;
     } else if (a->type == PARSER_NODE_TYPE_PFX(CALL)) {
-        if (verify_expr(a->data.call->fn, b->data.call->fn) == false) return false;
+        if (verify_expr(a->data.call->caller, b->data.call->caller) == false) return false;
         if (verify_list(&a->data.call->args, &b->data.call->args) == false) return false;
         return true;
     } else if (parser_node_type_is_op(a->type) == true) {
@@ -98,7 +112,7 @@ TEST(define_var_u64) {
 
 TEST(add_fn_call) {
     PARSER_TEST_INIT(parser_parse_expr, "a: +(1;3 - 2) * 4");
-    parser_node *call = CALL_NODE(OP_NODE(ADD, NULL, NULL), 2, BUF_NODE(INT, 1), OP_NODE(SUB, BUF_NODE(INT, 3), BUF_NODE(INT, 2)));
+    parser_node *call = CALL_NODE(OP_NODE(ADD, NULL, NULL), 2, NODE_LIST(BUF_NODE(INT, 1), OP_NODE(SUB, BUF_NODE(INT, 3), BUF_NODE(INT, 2))));
     parser_node *test = OP_NODE(ASSIGN, BUF_NODE(VAR, a), OP_NODE(MUL, call, BUF_NODE(INT, 4)));
     PARSER_TEST_VERIFY(test);
 }
@@ -111,6 +125,9 @@ TEST(negate) {
 
 TEST(fn_direct_call) {
     PARSER_TEST_INIT(parser_parse_expr, "{(u64::a;u64::b;u64) a ** b }(3;2)");
+    parser_node *fn = FN_NODE(3, NODE_LIST(OP_NODE(DEFINE, TYPE_NODE(U64), BUF_NODE(VAR, a)), OP_NODE(DEFINE, TYPE_NODE(U64), BUF_NODE(VAR, b)), TYPE_NODE(U64)), 1, NODE_LIST(OP_NODE(EXP, BUF_NODE(VAR, a), BUF_NODE(VAR, b))));
+    parser_node *test = CALL_NODE(fn, 2, NODE_LIST(BUF_NODE(INT, 3), BUF_NODE(INT, 2)));
+    PARSER_TEST_VERIFY(test);
 }
 
 
