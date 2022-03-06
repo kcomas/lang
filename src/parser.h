@@ -18,7 +18,8 @@ typedef enum {
     PARSER_NODE_TYPE_PFX(ADD),
     PARSER_NODE_TYPE_PFX(SUB),
     PARSER_NODE_TYPE_PFX(MUL),
-    PARSER_NODE_TYPE_PFX(DIV),
+    PARSER_NODE_TYPE_PFX(EXP),
+    PARSER_NODE_TYPE_PFX(DIV)
 } parser_node_type;
 
 inline bool parser_node_type_is_buf(parser_node_type type) {
@@ -90,12 +91,18 @@ inline void parser_node_buf_free(parser_node_buf *buf) {
 #define MAX_ARGS 8
 
 typedef struct {
-    parser_node_list args; // total args is list_len -1 if last arg is type if no define op, fn ret u0 otherwise
+    parser_node_list args; // total args is list_len -1 if last arg is type if no define op otherwise fn ret u0
     parser_node_list body;
 } parser_node_fn;
 
 inline parser_node_fn *parser_node_fn_init(void) {
     return calloc(1, sizeof(parser_node_fn));
+}
+
+inline void parser_node_fn_free(parser_node_fn *fn) {
+    parser_node_list_free(&fn->args);
+    parser_node_list_free(&fn->body);
+    free(fn);
 }
 
 typedef struct {
@@ -163,7 +170,10 @@ typedef enum {
     PARSER_STATUS_PFX(TOKENIZER_ERROR),
     PARSER_STATUS_PFX(NODE_FOR_BUF_NOT_NULL),
     PARSER_STATUS_PFX(NODE_FOR_TYPE_NOT_NULL),
+    PARSER_STATUS_PFX(NODE_FOR_FN_NOT_NULL),
     PARSER_STATUS_PFX(NODE_FOR_CALL_NOT_NULL),
+    PARSER_STATUS_PFX(INVALID_FN_ARGS),
+    PARSER_STATUS_PFX(INVALID_FN_BODY),
     PARSER_STATUS_PFX(INVALID_CALL),
     PARSER_STATUS_PFX(INVALID_DEFINE)
 } parser_status;
