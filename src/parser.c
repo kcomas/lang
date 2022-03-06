@@ -96,7 +96,7 @@ static parser_status parser_token_get(parser_state *const ps, token *const t, bo
         if ((ps->t_status = token_get(&ps->t_state, t, ps->str, advance)) != TOKEN_STATUS_PFX(OK))
             return PARSER_STATUS_PFX(TOKENIZER_ERROR);
         if (t->type != TOKEN_PFX(COMMENT) && t->type != TOKEN_PFX(NEWLINE)) break;
-        else if (t->type == TOKEN_PFX(NEWLINE) && ignore_nl == false) break;
+        else if (t->type == TOKEN_PFX(NEWLINE) && !ignore_nl) break;
     }
     return PARSER_STATUS_PFX(OK);
 }
