@@ -80,10 +80,36 @@ TEST(negate) {
     TOKEN_ASSERT(END, 1, 11, 10, 10);
 }
 
+TEST(fn_direct_call) {
+    TOKEN_TEST_INIT("{(u64::a;u64::b;u64) a ** b }(3;2)");
+    TOKEN_ASSERT(LBRACE, 1, 1, 0, 0);
+    TOKEN_ASSERT(LPARENS, 1, 2, 1, 1);
+    TOKEN_ASSERT(U64, 1, 3, 2, 4);
+    TOKEN_ASSERT(DEFINE, 1, 6, 5, 6);
+    TOKEN_ASSERT(VAR, 1, 8, 7, 7);
+    TOKEN_ASSERT(SEMICOLON, 1, 9, 8, 8);
+    TOKEN_ASSERT(U64, 1, 10, 9, 11);
+    TOKEN_ASSERT(DEFINE, 1, 13, 12, 13);
+    TOKEN_ASSERT(VAR, 1, 15, 14, 14);
+    TOKEN_ASSERT(SEMICOLON, 1, 16, 15, 15);
+    TOKEN_ASSERT(U64, 1, 17, 16, 18);
+    TOKEN_ASSERT(RPARENS, 1, 20, 19, 19);
+    TOKEN_ASSERT(VAR, 1, 22, 21, 21);
+    TOKEN_ASSERT(EXP, 1, 24, 23, 24);
+    TOKEN_ASSERT(VAR, 1, 27, 26, 26);
+    TOKEN_ASSERT(RBRACE, 1, 29, 28, 28);
+    TOKEN_ASSERT(LPARENS, 1, 30, 29, 29);
+    TOKEN_ASSERT(INT, 1, 31, 30, 30);
+    TOKEN_ASSERT(SEMICOLON, 1, 32, 31, 31);
+    TOKEN_ASSERT(INT, 1, 33, 32, 32);
+    TOKEN_ASSERT(RPARENS, 1, 34, 33, 33);
+    TOKEN_ASSERT(END, 1, 35, 34, 34);
+}
 
 INIT_TESTS(
     ADD_TEST(arith_with_comment);
     ADD_TEST(define_var_u64);
     ADD_TEST(add_fn_call);
     ADD_TEST(negate);
+    ADD_TEST(fn_direct_call);
 )

@@ -90,8 +90,7 @@ inline void parser_node_buf_free(parser_node_buf *buf) {
 #define MAX_ARGS 8
 
 typedef struct {
-    parser_node *return_type;
-    parser_node_list args;
+    parser_node_list args; // total args is list_len -1 if last arg is type if no define op, fn ret u0 otherwise
     parser_node_list body;
 } parser_node_fn;
 

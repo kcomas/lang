@@ -189,7 +189,7 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
                 TOKEN_ONE_CHAR('$', CAST);
                 TOKEN_ONE_CHAR('+', ADD);
                 TOKEN_ONE_CHAR('-', SUB);
-                TOKEN_ONE_CHAR('*', MUL);
+                TOKEN_TWO_CHAR('*', '*', MUL, EXP);
             case '/':
                 c = char_peek(&ts_tmp, str);
                 if (c == '/') {

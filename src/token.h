@@ -49,6 +49,7 @@ typedef enum {
     TOKEN_PFX(ADD),
     TOKEN_PFX(SUB),
     TOKEN_PFX(MUL),
+    TOKEN_PFX(EXP),
     TOKEN_PFX(DIV),
     TOKEN_PFX(READWRITE),
 } token_type;
