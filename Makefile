@@ -10,7 +10,7 @@ NAME = lang
 TNAME = _test
 TMAIN = $(TEST)/test.o
 CCOBJ = $(CC) -o $@ $^
-TOKEN_SOURCES = $(SRC)/file.o $(SRC)/token.o
+TOKEN_SOURCES = $(SRC)/token.o
 PARSER_SOURCES = $(SRC)/parser.o $(TOKEN_SOURCES)
 
 all: $(NAME)

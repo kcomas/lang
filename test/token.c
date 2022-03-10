@@ -106,10 +106,30 @@ TEST(fn_direct_call) {
     TOKEN_ASSERT(END, 1, 35, 34, 34);
 }
 
+TEST(vec_direct_access) {
+    TOKEN_TEST_INIT("a: 12 + [1;2;3][2]");
+    TOKEN_ASSERT(VAR, 1, 1, 0, 0);
+    TOKEN_ASSERT(ASSIGN, 1, 2, 1, 1);
+    TOKEN_ASSERT(INT, 1, 4, 3, 4);
+    TOKEN_ASSERT(ADD, 1, 7, 6, 6);
+    TOKEN_ASSERT(LBRACKET, 1, 9, 8, 8);
+    TOKEN_ASSERT(INT, 1, 10, 9, 9);
+    TOKEN_ASSERT(SEMICOLON, 1, 11, 10, 10);
+    TOKEN_ASSERT(INT, 1, 12, 11, 11);
+    TOKEN_ASSERT(SEMICOLON, 1, 13, 12, 12);
+    TOKEN_ASSERT(INT, 1, 14, 13, 13);
+    TOKEN_ASSERT(RBRACKET, 1, 15, 14, 14);
+    TOKEN_ASSERT(LBRACKET, 1, 16, 15, 15);
+    TOKEN_ASSERT(INT, 1, 17, 16, 16);
+    TOKEN_ASSERT(RBRACKET, 1, 18, 17, 17);
+    TOKEN_ASSERT(END, 1, 19, 18, 18);
+}
+
 INIT_TESTS(
     ADD_TEST(arith_with_comment);
     ADD_TEST(define_var_u64);
     ADD_TEST(add_fn_call);
     ADD_TEST(negate);
     ADD_TEST(fn_direct_call);
+    ADD_TEST(vec_direct_access);
 )

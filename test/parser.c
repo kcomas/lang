@@ -5,9 +5,7 @@
 #define NODE_LIST(NODES...) ((parser_node*[]) {NODES})
 
 #define ADD_TO_LIST(LIST_TGT, LEN, LIST)  do { \
-    for (size_t i = 0; i < LEN; i++) { \
-        parser_node_list_add_item(LIST_TGT, LIST[i]); \
-    } \
+    for (size_t i = 0; i < LEN; i++) parser_node_list_add_item(LIST_TGT, LIST[i]); \
 } while(0)
 
 static parser_node *buf_node(parser_node_type type, const token *const t_ignore, const char *const data) {
@@ -31,13 +29,21 @@ static parser_node *fn_node(const token *const t_ignore, size_t arg_len, parser_
 
 #define FN_NODE(ARG_LEN, ARGS, BODY_LEN, BODY) fn_node(&t_ignore, ARG_LEN, ARGS, BODY_LEN, BODY)
 
-static parser_node *call_node(const token *const t_ignore, parser_node *const caller, size_t arg_len, parser_node *const args[]) {
-    parser_node_call *call = parser_node_call_init(caller);
-    ADD_TO_LIST(&call->args, arg_len, args);
-    return parser_node_init(PARSER_NODE_TYPE_PFX(CALL), t_ignore, (parser_node_data) { .call = call });
+static parser_node *vec_node(const token *const t_ignore, size_t item_len, parser_node *const items[]) {
+    parser_node_vec *vec = parser_node_vec_init();
+    ADD_TO_LIST(&vec->items, item_len, items);
+    return parser_node_init(PARSER_NODE_TYPE_PFX(VEC), t_ignore, (parser_node_data) { .vec = vec });
 }
 
-#define CALL_NODE(FN, LEN, ARGS) call_node(&t_ignore, FN, LEN, ARGS)
+#define VEC_NODE(ITEM_LEN, ITEMS) vec_node(&t_ignore, ITEM_LEN, ITEMS);
+
+static parser_node *access_node(parser_node_type type, const token *const t_ignore, parser_node *const tgt, size_t arg_len, parser_node *const args[]) {
+    parser_node_access *access = parser_node_access_init(tgt);
+    ADD_TO_LIST(&access->args, arg_len, args);
+    return parser_node_init(type, t_ignore, (parser_node_data) { .access = access });
+}
+
+#define ACCESS_NODE(TYPE, FN, LEN, ARGS) access_node(PARSER_NODE_TYPE_PFX(TYPE), &t_ignore, FN, LEN, ARGS)
 
 static parser_node *op_node(parser_node_type type, const token *const t_ignore, parser_node *left, parser_node *right) {
     parser_node *node = parser_node_init(type, t_ignore, (parser_node_data) { .op = parser_node_op_init() });
@@ -69,7 +75,8 @@ static bool verify_expr(const parser_node *const a, const parser_node *const b) 
     if (parser_node_type_is_buf(a->type)) return a->data.buf->len == b->data.buf->len && strcmp(a->data.buf->buf, b->data.buf->buf) == 0;
     else if (parser_node_type_is_type(a->type)) return true;
     else if (a->type == PARSER_NODE_TYPE_PFX(FN)) return verify_list(&a->data.fn->args, &b->data.fn->args) && verify_list(&a->data.fn->body, &b->data.fn->body);
-    else if (a->type == PARSER_NODE_TYPE_PFX(CALL)) return verify_expr(a->data.call->caller, b->data.call->caller) && verify_list(&a->data.call->args, &b->data.call->args);
+    else if (a->type == PARSER_NODE_TYPE_PFX(VEC)) return verify_list(&a->data.vec->items, &b->data.vec->items);
+    else if (parser_node_type_is_access(a->type)) return verify_expr(a->data.access->tgt, b->data.access->tgt) && verify_list(&a->data.access->args, &b->data.access->args);
     else if (parser_node_type_is_op(a->type)) return verify_expr(a->data.op->left, b->data.op->left) && verify_expr(a->data.op->right, b->data.op->right);
     return false;
 }
@@ -102,7 +109,7 @@ TEST(define_var_u64) {
 
 TEST(add_fn_call) {
     PARSER_TEST_INIT(parser_parse_expr, "a: +(1;3 - 2) * 4");
-    parser_node *call = CALL_NODE(OP_NODE(ADD, NULL, NULL), 2, NODE_LIST(BUF_NODE(INT, 1), OP_NODE(SUB, BUF_NODE(INT, 3), BUF_NODE(INT, 2))));
+    parser_node *call = ACCESS_NODE(CALL, OP_NODE(ADD, NULL, NULL), 2, NODE_LIST(BUF_NODE(INT, 1), OP_NODE(SUB, BUF_NODE(INT, 3), BUF_NODE(INT, 2))));
     parser_node *test = OP_NODE(ASSIGN, BUF_NODE(VAR, a), OP_NODE(MUL, call, BUF_NODE(INT, 4)));
     PARSER_TEST_VERIFY(test);
 }
@@ -115,11 +122,19 @@ TEST(negate) {
 
 TEST(fn_direct_call) {
     PARSER_TEST_INIT(parser_parse_expr, "{(u64::a;u64::b;u64) a ** b }(3;2)");
-    parser_node *fn = FN_NODE(3, NODE_LIST(OP_NODE(DEFINE, TYPE_NODE(U64), BUF_NODE(VAR, a)), OP_NODE(DEFINE, TYPE_NODE(U64), BUF_NODE(VAR, b)), TYPE_NODE(U64)), 1, NODE_LIST(OP_NODE(EXP, BUF_NODE(VAR, a), BUF_NODE(VAR, b))));
-    parser_node *test = CALL_NODE(fn, 2, NODE_LIST(BUF_NODE(INT, 3), BUF_NODE(INT, 2)));
+    parser_node *args[] = { OP_NODE(DEFINE, TYPE_NODE(U64), BUF_NODE(VAR, a)), OP_NODE(DEFINE, TYPE_NODE(U64), BUF_NODE(VAR, b)), TYPE_NODE(U64) };
+    parser_node *fn = FN_NODE(3, args, 1, NODE_LIST(OP_NODE(EXP, BUF_NODE(VAR, a), BUF_NODE(VAR, b))));
+    parser_node *test = ACCESS_NODE(CALL, fn, 2, NODE_LIST(BUF_NODE(INT, 3), BUF_NODE(INT, 2)));
     PARSER_TEST_VERIFY(test);
 }
 
+TEST(vec_direct_access) {
+    PARSER_TEST_INIT(parser_parse_expr, "a: 12 + [1; 2; 3][2]");
+    parser_node *vec = VEC_NODE(3, NODE_LIST(BUF_NODE(INT, 1), BUF_NODE(INT, 2), BUF_NODE(INT, 3)));
+    parser_node *index = ACCESS_NODE(INDEX, vec, 1, NODE_LIST(BUF_NODE(INT, 2)));
+    parser_node *test = OP_NODE(ASSIGN, BUF_NODE(VAR, a), OP_NODE(ADD, BUF_NODE(INT, 12), index));
+    PARSER_TEST_VERIFY(test);
+}
 
 INIT_TESTS(
     ADD_TEST(arith_with_comment);
@@ -127,4 +142,5 @@ INIT_TESTS(
     ADD_TEST(add_fn_call);
     ADD_TEST(negate);
     ADD_TEST(fn_direct_call);
+    ADD_TEST(vec_direct_access);
 )

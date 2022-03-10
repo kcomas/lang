@@ -12,6 +12,8 @@ typedef enum {
     PARSER_NODE_TYPE_PFX(STRING),
     PARSER_NODE_TYPE_PFX(U64),
     PARSER_NODE_TYPE_PFX(FN),
+    PARSER_NODE_TYPE_PFX(VEC),
+    PARSER_NODE_TYPE_PFX(INDEX),
     PARSER_NODE_TYPE_PFX(CALL),
     PARSER_NODE_TYPE_PFX(ASSIGN),
     PARSER_NODE_TYPE_PFX(DEFINE),
@@ -28,6 +30,10 @@ inline bool parser_node_type_is_buf(parser_node_type type) {
 
 inline bool parser_node_type_is_type(parser_node_type type) {
     return type >= PARSER_NODE_TYPE_PFX(U64) && type <= PARSER_NODE_TYPE_PFX(U64);
+}
+
+inline bool parser_node_type_is_access(parser_node_type type) {
+    return type >= PARSER_NODE_TYPE_PFX(INDEX) && type <= PARSER_NODE_TYPE_PFX(CALL);
 }
 
 inline bool parser_node_type_is_op(parser_node_type type) {
@@ -83,7 +89,9 @@ inline void parser_node_buf_free(parser_node_buf *buf) {
     free(buf);
 }
 
-#define MAX_ARGS 8
+#ifndef MAX_ARGS
+    #define MAX_ARGS 8
+#endif
 
 typedef struct {
     parser_node_list args; // total args is list_len -1 if last arg is type if no define op otherwise fn ret u0
@@ -101,20 +109,33 @@ inline void parser_node_fn_free(parser_node_fn *fn) {
 }
 
 typedef struct {
-    parser_node *caller;
-    parser_node_list args;
-} parser_node_call;
+    parser_node_list items;
+} parser_node_vec;
 
-inline parser_node_call *parser_node_call_init(parser_node *caller) {
-    parser_node_call *call = calloc(1, sizeof(parser_node_call));
-    call->caller = caller;
-    return call;
+inline parser_node_vec *parser_node_vec_init(void) {
+    return calloc(1, sizeof(parser_node_vec));
 }
 
-inline void parser_node_call_free(parser_node_call *call) {
-    parser_node_free(call->caller);
-    parser_node_list_free(&call->args);
-    free(call);
+inline void parser_node_vec_free(parser_node_vec *vec) {
+    parser_node_list_free(&vec->items);
+    free(vec);
+}
+
+typedef struct {
+    parser_node *tgt;
+    parser_node_list args;
+} parser_node_access;
+
+inline parser_node_access *parser_node_access_init(parser_node *tgt) {
+    parser_node_access *access = calloc(1, sizeof(parser_node_access));
+    access->tgt = tgt;
+    return access;
+}
+
+inline void parser_node_access_free(parser_node_access *access) {
+    parser_node_free(access->tgt);
+    parser_node_list_free(&access->args);
+    free(access);
 }
 
 typedef struct {
@@ -139,7 +160,8 @@ typedef union {
     parser_node_buf *buf;
     parser_node_op *op;
     parser_node_fn *fn;
-    parser_node_call *call;
+    parser_node_vec *vec;
+    parser_node_access *access;
 } parser_node_data;
 
 typedef struct _parser_node {
@@ -168,8 +190,12 @@ typedef enum {
     PARSER_STATUS_PFX(NODE_FOR_FN_NOT_NULL),
     PARSER_STATUS_PFX(NODE_FOR_CALL_NOT_NULL),
     PARSER_STATUS_PFX(INVALID_FN_ARGS),
+    PARSER_STATUS_PFX(TOO_MANY_FN_ARGS),
     PARSER_STATUS_PFX(INVALID_FN_BODY),
+    PARSER_STATUS_PFX(INVALID_VEC),
+    PARSER_STATUS_PFX(INVALID_INDEX),
     PARSER_STATUS_PFX(INVALID_CALL),
+    PARSER_STATUS_PFX(TOO_MANY_CALL_ARGS),
     PARSER_STATUS_PFX(INVALID_DEFINE)
 } parser_status;
 
