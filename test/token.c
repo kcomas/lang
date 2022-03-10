@@ -106,7 +106,7 @@ TEST(fn_direct_call) {
     TOKEN_ASSERT(END, 1, 35, 34, 34);
 }
 
-TEST(vec_direct_access) {
+TEST(vec_direct_get) {
     TOKEN_TEST_INIT("a: 12 + [1;2;3][2]");
     TOKEN_ASSERT(VAR, 1, 1, 0, 0);
     TOKEN_ASSERT(ASSIGN, 1, 2, 1, 1);
@@ -131,5 +131,5 @@ INIT_TESTS(
     ADD_TEST(add_fn_call);
     ADD_TEST(negate);
     ADD_TEST(fn_direct_call);
-    ADD_TEST(vec_direct_access);
+    ADD_TEST(vec_direct_get);
 )

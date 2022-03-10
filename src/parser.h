@@ -32,7 +32,7 @@ inline bool parser_node_type_is_type(parser_node_type type) {
     return type >= PARSER_NODE_TYPE_PFX(U64) && type <= PARSER_NODE_TYPE_PFX(U64);
 }
 
-inline bool parser_node_type_is_access(parser_node_type type) {
+inline bool parser_node_type_is_get(parser_node_type type) {
     return type >= PARSER_NODE_TYPE_PFX(INDEX) && type <= PARSER_NODE_TYPE_PFX(CALL);
 }
 
@@ -124,18 +124,18 @@ inline void parser_node_vec_free(parser_node_vec *vec) {
 typedef struct {
     parser_node *tgt;
     parser_node_list args;
-} parser_node_access;
+} parser_node_get;
 
-inline parser_node_access *parser_node_access_init(parser_node *tgt) {
-    parser_node_access *access = calloc(1, sizeof(parser_node_access));
-    access->tgt = tgt;
-    return access;
+inline parser_node_get *parser_node_get_init(parser_node *tgt) {
+    parser_node_get *get = calloc(1, sizeof(parser_node_get));
+    get->tgt = tgt;
+    return get;
 }
 
-inline void parser_node_access_free(parser_node_access *access) {
-    parser_node_free(access->tgt);
-    parser_node_list_free(&access->args);
-    free(access);
+inline void parser_node_get_free(parser_node_get *get) {
+    parser_node_free(get->tgt);
+    parser_node_list_free(&get->args);
+    free(get);
 }
 
 typedef struct {
@@ -161,7 +161,7 @@ typedef union {
     parser_node_op *op;
     parser_node_fn *fn;
     parser_node_vec *vec;
-    parser_node_access *access;
+    parser_node_get *get;
 } parser_node_data;
 
 typedef struct _parser_node {

@@ -5,7 +5,7 @@ extern inline bool parser_node_type_is_buf(parser_node_type type);
 
 extern inline bool parser_node_type_is_type(parser_node_type type);
 
-extern inline bool parser_node_type_is_access(parser_node_type type);
+extern inline bool parser_node_type_is_get(parser_node_type type);
 
 extern inline bool parser_node_type_is_op(parser_node_type type);
 
@@ -46,9 +46,9 @@ extern inline parser_node_vec *parser_node_vec_init(void);
 
 extern inline void parser_node_vec_free(parser_node_vec *vec);
 
-extern inline parser_node_access *parser_node_access_init(parser_node *tgt);
+extern inline parser_node_get *parser_node_get_init(parser_node *tgt);
 
-extern inline void parser_node_access_free(parser_node_access *access);
+extern inline void parser_node_get_free(parser_node_get *get);
 
 extern inline parser_node_op *parser_node_op_init(void);
 
@@ -84,7 +84,7 @@ void parser_node_free(parser_node *node) {
             break;
         case PARSER_NODE_TYPE_PFX(INDEX):
         case PARSER_NODE_TYPE_PFX(CALL):
-            parser_node_access_free(node->data.access);
+            parser_node_get_free(node->data.get);
             break;
         case PARSER_NODE_TYPE_PFX(ASSIGN):
         case PARSER_NODE_TYPE_PFX(DEFINE):
@@ -179,15 +179,15 @@ static parser_status parser_parser_vec_index(parser_state *const ps, parser_node
     parser_status status;
     // start the list at first [
     token t_tmp = ps->tn;
-    // if the previous node is null the [] is a vec, otherwise [] is an index
+    // if the previous node is null [] is a vec, otherwise [] is an index
     if (*node == NULL) {
         parser_node_vec *vec = parser_node_vec_init();
         STMT_TO_STOP(vec, items, bracket_token_type_stop, RBRACKET, parser_node_vec_free, INVALID_VEC);
         *node = parser_node_init(PARSER_NODE_TYPE_PFX(VEC), &t_tmp, (parser_node_data) { .vec = vec });
     } else {
-        parser_node_access *access = parser_node_access_init(*node);
-        STMT_TO_STOP(access, args, bracket_token_type_stop, RBRACKET, parser_node_access_free, INVALID_INDEX);
-        *node = parser_node_init(PARSER_NODE_TYPE_PFX(INDEX), &t_tmp, (parser_node_data) { .access = access });
+        parser_node_get *get = parser_node_get_init(*node);
+        STMT_TO_STOP(get, args, bracket_token_type_stop, RBRACKET, parser_node_get_free, INVALID_INDEX);
+        *node = parser_node_init(PARSER_NODE_TYPE_PFX(INDEX), &t_tmp, (parser_node_data) { .get = get });
     }
     return parser_parse_expr(ps, node);
 }
@@ -197,10 +197,10 @@ static parser_status parser_parse_call(parser_state *const ps, parser_node **nod
     if (*node == NULL) return PARSER_STATUS_PFX(NODE_FOR_CALL_NOT_NULL);
     // start the list at the first (
     token t_tmp = ps->tn;
-    parser_node_access *access = parser_node_access_init(*node);
-    STMT_TO_STOP(access, args, parens_token_type_stop, RPARENS, parser_node_access_free, INVALID_CALL);
-    if (access->args.len > MAX_ARGS) return PARSER_STATUS_PFX(TOO_MANY_CALL_ARGS);
-    *node = parser_node_init(PARSER_NODE_TYPE_PFX(CALL), &t_tmp, (parser_node_data) { .access = access });
+    parser_node_get *get = parser_node_get_init(*node);
+    STMT_TO_STOP(get, args, parens_token_type_stop, RPARENS, parser_node_get_free, INVALID_CALL);
+    if (get->args.len > MAX_ARGS) return PARSER_STATUS_PFX(TOO_MANY_CALL_ARGS);
+    *node = parser_node_init(PARSER_NODE_TYPE_PFX(CALL), &t_tmp, (parser_node_data) { .get = get });
     return parser_parse_expr(ps, node);
 }
 
