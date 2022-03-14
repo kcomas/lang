@@ -179,11 +179,18 @@ static parser_status parser_parser_vec_index(parser_state *const ps, parser_node
     parser_status status;
     // start the list at first [
     token t_tmp = ps->tn;
-    // if the previous node is null [] is a vec, otherwise [] is an index
-    if (*node == NULL) {
+    // if the previous node is null or its a op with no args [] is a vec, otherwise [] is an index
+    if (*node == NULL || (parser_node_type_is_op((*node)->type) && parser_node_op_empty((*node)->data.op))) {
         parser_node_vec *vec = parser_node_vec_init();
         STMT_TO_STOP(vec, items, bracket_token_type_stop, RBRACKET, parser_node_vec_free, INVALID_VEC);
-        *node = parser_node_init(PARSER_NODE_TYPE_PFX(VEC), &t_tmp, (parser_node_data) { .vec = vec });
+        parser_node *tmp_node  = parser_node_init(PARSER_NODE_TYPE_PFX(VEC), &t_tmp, (parser_node_data) { .vec = vec });
+        if (*node == NULL) {
+            *node = tmp_node;
+        } else {
+            // monadic op on vec
+            (*node)->data.op->right = tmp_node;
+            node = &(*node)->data.op->right;
+        }
     } else {
         parser_node_get *get = parser_node_get_init(*node);
         STMT_TO_STOP(get, args, bracket_token_type_stop, RBRACKET, parser_node_get_free, INVALID_INDEX);
@@ -194,7 +201,7 @@ static parser_status parser_parser_vec_index(parser_state *const ps, parser_node
 
 static parser_status parser_parse_call(parser_state *const ps, parser_node **node) {
     parser_status status;
-    if (*node == NULL) return PARSER_STATUS_PFX(NODE_FOR_CALL_NOT_NULL);
+    if (*node == NULL) return PARSER_STATUS_PFX(NODE_FOR_CALL_NULL);
     // start the list at the first (
     token t_tmp = ps->tn;
     parser_node_get *get = parser_node_get_init(*node);
