@@ -12,7 +12,7 @@ typedef enum {
     TOKEN_PFX(NOTHING),
     TOKEN_PFX(VAR),
     TOKEN_PFX(INT),
-    TOKEN_PFX(STRING),
+    TOKEN_PFX(STR),
     TOKEN_PFX(U1),
     TOKEN_PFX(U8),
     TOKEN_PFX(U16),
@@ -73,7 +73,7 @@ inline void token_init(token *const t) {
 typedef enum {
     TOKEN_STATUS_PFX(OK),
     TOKEN_STATUS_PFX(INVALID_CHAR),
-    TOKEN_STATUS_PFX(INVALID_STRING)
+    TOKEN_STATUS_PFX(INVALID_STR)
 } token_status;
 
 typedef struct {
@@ -86,7 +86,7 @@ inline void token_state_init(token_state *const ts) {
     ts->pos = 0;
 }
 
-inline void token_state_copy(token_state *const dest, const token_state *const src) {
+inline void token_state_copy(token_state *restrict const dest, const token_state *restrict const src) {
     dest->line_no = src->line_no;
     dest->char_no = src->char_no;
     dest->pos = src->pos;

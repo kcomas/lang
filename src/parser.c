@@ -71,7 +71,7 @@ void parser_node_free(parser_node *node) {
     switch (node->type) {
         case PARSER_NODE_TYPE_PFX(VAR):
         case PARSER_NODE_TYPE_PFX(INT):
-        case PARSER_NODE_TYPE_PFX(STRING):
+        case PARSER_NODE_TYPE_PFX(STR):
             parser_node_buf_free(node->data.buf);
             break;
         case PARSER_NODE_TYPE_PFX(U64):

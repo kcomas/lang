@@ -9,7 +9,7 @@
 typedef enum {
     PARSER_NODE_TYPE_PFX(VAR),
     PARSER_NODE_TYPE_PFX(INT),
-    PARSER_NODE_TYPE_PFX(STRING),
+    PARSER_NODE_TYPE_PFX(STR),
     PARSER_NODE_TYPE_PFX(U64),
     PARSER_NODE_TYPE_PFX(FN),
     PARSER_NODE_TYPE_PFX(VEC),
@@ -25,7 +25,7 @@ typedef enum {
 } parser_node_type;
 
 inline bool parser_node_type_is_buf(parser_node_type type) {
-    return type >= PARSER_NODE_TYPE_PFX(VAR) && type <= PARSER_NODE_TYPE_PFX(STRING);
+    return type >= PARSER_NODE_TYPE_PFX(VAR) && type <= PARSER_NODE_TYPE_PFX(STR);
 }
 
 inline bool parser_node_type_is_type(parser_node_type type) {
@@ -170,7 +170,7 @@ typedef struct _parser_node {
     parser_node_data data;
 } parser_node;
 
-inline parser_node *parser_node_init( parser_node_type type, const token *const t, parser_node_data data ) {
+inline parser_node *parser_node_init(parser_node_type type, const token *const t, parser_node_data data ) {
     parser_node *node = calloc(1, sizeof(parser_node));
     node->line_no = t->line_no;
     node->char_no = t->char_no;

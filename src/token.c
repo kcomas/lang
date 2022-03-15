@@ -5,7 +5,7 @@ extern inline void token_init(token *const t);
 
 extern inline void token_state_init(token_state *const ts);
 
-extern inline void token_state_copy(token_state *const dest, const token_state *const src);
+extern inline void token_state_copy(token_state *restrict const dest, const token_state *restrict const src);
 
 static void advance_char_pos(token_state *const ts_tmp) {
     ts_tmp->char_no++;
@@ -100,15 +100,15 @@ static token_status load_num(token_state *const ts_tmp, token *const t, const ch
     return TOKEN_STATUS_PFX(OK);
 }
 
-static token_status load_string(token_state *const ts_tmp, token *const t, const char *const str) {
+static token_status load_str(token_state *const ts_tmp, token *const t, const char *const str) {
     // at first "
     char c = char_next(ts_tmp, str);
     // at first char of str or " for empty str
     while (c != '"') {
         c = char_next(ts_tmp, str);
-        if (c == '\0') return TOKEN_STATUS_PFX(INVALID_STRING);
+        if (c == '\0') return TOKEN_STATUS_PFX(INVALID_STR);
     }
-    t->type = TOKEN_PFX(STRING);
+    t->type = TOKEN_PFX(STR);
     return TOKEN_STATUS_PFX(OK);
 }
 
@@ -142,7 +142,7 @@ token_status token_get(token_state *const ts, token *const t, const char *const 
     } else {
         switch (c) {
             case '"':
-                if ((status = load_string(&ts_tmp, t, str)) != TOKEN_STATUS_PFX(OK)) return status;
+                if ((status = load_str(&ts_tmp, t, str)) != TOKEN_STATUS_PFX(OK)) return status;
                 break;
             TOKEN_ONE_CHAR('\0', END);
             case '\n':

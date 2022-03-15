@@ -1,0 +1,19 @@
+
+#pragma once
+
+#define TYPE_NAME_PFX(NAME) TYPE_NAME_PFX_##NAME
+
+typedef enum {
+    TYPE_NAME_PFX(U0),
+    TYPE_NAME_PFX(U1),
+    TYPE_NAME_PFX(U8),
+    TYPE_NAME_PFX(U16),
+    TYPE_NAME_PFX(U32),
+    TYPE_NAME_PFX(U64),
+    TYPE_NAME_PFX(I8),
+    TYPE_NAME_PFX(I16),
+    TYPE_NAME_PFX(I32),
+    TYPE_NAME_PFX(I64),
+    TYPE_NAME_PFX(F32),
+    TYPE_NAME_PFX(F64)
+} type_name;
