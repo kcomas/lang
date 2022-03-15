@@ -203,10 +203,10 @@ typedef struct {
     token_status t_status;
     token_state t_state;
     token tn, tp;
-    const char *str;
+    char *str;
 } parser_state;
 
-inline void parser_state_init(parser_state *const ps, const char *const str) {
+inline void parser_state_init(parser_state *const ps, char *const str) {
     token_state_init(&ps->t_state);
     token_init(&ps->tn);
     token_init(&ps->tp);

@@ -99,7 +99,7 @@ void parser_node_free(parser_node *node) {
     free(node);
 }
 
-extern inline void parser_state_init(parser_state *const ps, const char *const str);
+extern inline void parser_state_init(parser_state *const ps, char *const str);
 
 static parser_status parser_token_get(parser_state *const ps, token *const t, bool ignore_nl, bool advance) {
     for (;;) {
