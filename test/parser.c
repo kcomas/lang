@@ -20,7 +20,7 @@ static parser_node *buf_node(parser_node_type type, const token *const t_ignore,
 
 #define TYPE_NODE(TYPE) parser_node_init(PARSER_NODE_TYPE_PFX(TYPE), &t_ignore, (parser_node_data) {})
 
-static parser_node *fn_node(const token *const t_ignore, size_t arg_len, parser_node *const args[], size_t body_len, parser_node *const body[]) {
+static parser_node *fn_node(const token *const t_ignore, size_t arg_len, parser_node *restrict const args[], size_t body_len, parser_node *restrict const body[]) {
     parser_node_fn *fn = parser_node_fn_init();
     ADD_TO_LIST(&fn->args, arg_len, args);
     ADD_TO_LIST(&fn->body, body_len, body);
@@ -45,7 +45,7 @@ static parser_node *get_node(parser_node_type type, const token *const t_ignore,
 
 #define GET_NODE(TYPE, FN, LEN, ARGS) get_node(PARSER_NODE_TYPE_PFX(TYPE), &t_ignore, FN, LEN, ARGS)
 
-static parser_node *op_node(parser_node_type type, const token *const t_ignore, parser_node *left, parser_node *right) {
+static parser_node *op_node(parser_node_type type, const token *const t_ignore, parser_node *restrict const left, parser_node *restrict const right) {
     parser_node *node = parser_node_init(type, t_ignore, (parser_node_data) { .op = parser_node_op_init() });
     node->data.op->left = left;
     node->data.op->right = right;
@@ -54,9 +54,9 @@ static parser_node *op_node(parser_node_type type, const token *const t_ignore, 
 
 #define OP_NODE(TYPE, LEFT, RIGHT) op_node(PARSER_NODE_TYPE_PFX(TYPE), &t_ignore, LEFT, RIGHT)
 
-static bool verify_expr(const parser_node *const a, const parser_node *const b);
+static bool verify_expr(const parser_node *restrict const a, const parser_node *restrict const b);
 
-static bool verify_list(const parser_node_list *const a, const parser_node_list *const b) {
+static bool verify_list(const parser_node_list *restrict const a, const parser_node_list *restrict const b) {
     parser_node_list_item *ah, *bh;
     ah = a->head;
     bh = b->head;
@@ -69,7 +69,7 @@ static bool verify_list(const parser_node_list *const a, const parser_node_list 
     return true;
 }
 
-static bool verify_expr(const parser_node *const a, const parser_node *const b) {
+static bool verify_expr(const parser_node *restrict const a, const parser_node *restrict const b) {
     if (a == NULL && b == NULL) return true;
     if (a->type != b->type) return false;
     if (parser_node_type_is_buf(a->type)) return a->data.buf->len == b->data.buf->len && strcmp(a->data.buf->buf, b->data.buf->buf) == 0;
