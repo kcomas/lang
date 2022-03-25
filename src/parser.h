@@ -170,7 +170,7 @@ typedef struct _parser_node {
     parser_node_data data;
 } parser_node;
 
-inline parser_node *parser_node_init(parser_node_type type, const token *const t, parser_node_data data ) {
+inline parser_node *parser_node_init(parser_node_type type, const token *const t, parser_node_data data) {
     parser_node *node = calloc(1, sizeof(parser_node));
     node->line_no = t->line_no;
     node->char_no = t->char_no;
