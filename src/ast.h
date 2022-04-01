@@ -24,7 +24,7 @@ typedef struct {
 typedef struct _ast_node ast_node;
 
 typedef struct {
-    size_t len;
+    size_t body_len;
     type *t_fn;
     ast_node *body[];
 } ast_fn;

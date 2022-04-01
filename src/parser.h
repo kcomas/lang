@@ -94,7 +94,7 @@ inline void parser_node_buf_free(parser_node_buf *buf) {
 #endif
 
 typedef struct {
-    parser_node_list args; // total args is list_len -1 if last arg is type if no define op otherwise fn ret u0
+    parser_node_list args; // total args is list_len or list_len - 1 if the ret type not u0
     parser_node_list body;
 } parser_node_fn;
 

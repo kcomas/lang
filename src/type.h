@@ -26,6 +26,8 @@ typedef enum {
 
 typedef struct _type type;
 
+void type_free(type *t);
+
 #define VAR_GROUP_PFX(NAME) VAR_GROUP_##NAME
 
 typedef enum {
@@ -48,12 +50,21 @@ inline type_sym_tbl_item *type_sym_tbl_item_init(var_group group, size_t len, co
     return item;
 }
 
-#ifndef DEFAULT_TYPE_SYM_TBL_BUCKETS
-    #define DEFAULT_TYPE_SYM_TBL_BUCKETS 10
+inline void type_sym_tbl_item_free(type_sym_tbl_item *item) {
+    type_free(item->v_type);
+    free(item);
+}
+
+#ifndef TYPE_SYM_TBL_BUCKETS
+    #define TYPE_SYM_TBL_BUCKETS 10
 #endif
 
 #ifndef TYPE_SYM_TBL_REHASH
     #define TYPE_SYM_TBL_REHASH 5
+#endif
+
+#ifndef TYPE_SYM_TBL_RESIZE
+    #define TYPE_SYM_TBL_RESIZE 2
 #endif
 
 typedef struct {
@@ -61,26 +72,44 @@ typedef struct {
     type_sym_tbl_item *buckets[];
 } type_sym_tbl;
 
-#define TYPE_SYM_TBL_STATUS_PFX(NAME) TYPE_SYM_TBL_STATUS_##NAME
-
-typedef enum {
-    TYPE_SYM_TBL_STATUS_PFX(FOUND),
-    TYPE_SYM_TBL_STATUS_PFX(NOT_FOUND),
-    TYPE_SYM_TBL_STATUS_PFX(ADDED),
-    TYPE_SYM_TBL_STATUS_PFX(ALLREADY_EXISTS),
-    TYPE_SYM_TBL_STATUS_PFX(VAR_GROUP_MISMATCH)
-} type_sym_tbl_status;
-
 inline type_sym_tbl *type_sym_tbl_init(size_t size) {
     return calloc(1, sizeof(type_sym_tbl) + sizeof(type_sym_tbl_item*) * size);
 }
 
+inline void type_sym_tbl_free(type_sym_tbl *tbl) {
+    for (size_t i = 0; i < tbl->size; i++) if (tbl->buckets[i] != NULL) type_sym_tbl_item_free(tbl->buckets[i]);
+    free(tbl);
+}
+
+#define TYPE_SYM_TBL_STATUS_PFX(NAME) TYPE_SYM_TBL_STATUS_##NAME
+
+typedef enum {
+    TYPE_SYM_TBL_STATUS_PFX(FOUND),
+    TYPE_SYM_TBL_STATUS_PFX(ADDED),
+    TYPE_SYM_TBL_STATUS_PFX(NOT_FOUND),
+    TYPE_SYM_TBL_STATUS_PFX(ALLREADY_EXISTS),
+    TYPE_SYM_TBL_STATUS_PFX(VAR_GROUP_MISMATCH),
+    TYPE_SYM_TBL_STATUS_PFX(REHASHING_FALIED)
+} type_sym_tbl_status;
+
 // entry is the found item or the inserted item
-type_sym_tbl_status _sym_table_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, var_group group, size_t len, const char *const v_name, bool find_only, bool insert_only);
+type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, var_group group, size_t len, const char *const v_name, bool find_only, bool insert_only);
 
+inline type_sym_tbl_status type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, var_group group, size_t len, const char *const v_name) {
+    return _type_sym_tbl_findsert(tbl, entry, group, len, v_name, false, false);
+}
 
-typedef struct {
-    size_t len;
+inline type_sym_tbl_status type_sym_tbl_find(type_sym_tbl **tbl, type_sym_tbl_item **entry, var_group group, size_t len, const char *const v_name) {
+    return _type_sym_tbl_findsert(tbl, entry, group, len, v_name, true, false);
+}
+
+inline type_sym_tbl_status type_sym_tbl_insert(type_sym_tbl **tbl, type_sym_tbl_item **entry, var_group group, size_t len, const char *const v_name) {
+    return _type_sym_tbl_findsert(tbl, entry, group, len, v_name, false, true);
+}
+
+typedef struct _type_fn {
+    size_t args_len;
+    struct _type_fn *parent;
     type *ret;
     type_sym_tbl *tbl;
     type_sym_tbl_item *args[];
