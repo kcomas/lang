@@ -73,7 +73,9 @@ typedef struct {
 } type_sym_tbl;
 
 inline type_sym_tbl *type_sym_tbl_init(size_t size) {
-    return calloc(1, sizeof(type_sym_tbl) + sizeof(type_sym_tbl_item*) * size);
+    type_sym_tbl *tbl = calloc(1, sizeof(type_sym_tbl) + sizeof(type_sym_tbl_item*) * size);
+    tbl->size = size;
+    return tbl;
 }
 
 inline void type_sym_tbl_free(type_sym_tbl *tbl) {
@@ -109,8 +111,8 @@ inline type_sym_tbl_status type_sym_tbl_insert(type_sym_tbl **tbl, type_sym_tbl_
 
 typedef struct _type_fn {
     size_t args_len;
-    struct _type_fn *parent;
     type *ret;
+    struct _type_fn *parent;
     type_sym_tbl *tbl;
     type_sym_tbl_item *args[];
 } type_fn;

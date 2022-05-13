@@ -45,13 +45,8 @@ inline test_queue *test_queue_init(void) {
 
 inline void test_queue_add(test_queue *const tq, test_item *const ti) {
     tq->total++;
-    if (tq->head == NULL) {
-        tq->head = ti;
-        tq->tail = tq->head;
-    } else {
-        tq->tail->next = ti;
-        tq->tail = tq->tail->next;
-    }
+    if (tq->head == NULL) tq->tail = tq->head = ti;
+    else tq->tail = tq->tail->next = ti;
 }
 
 inline void test_queue_free(test_queue *const tq) {
