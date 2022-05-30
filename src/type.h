@@ -59,8 +59,8 @@ inline void type_sym_tbl_item_free(type_sym_tbl_item *item) {
     #define TYPE_SYM_TBL_BUCKETS 10
 #endif
 
-#ifndef TYPE_SYM_TBL_REHASH
-    #define TYPE_SYM_TBL_REHASH 5
+#ifndef TYPE_SYM_TBL_ADDRESSING
+    #define TYPE_SYM_TBL_ADDRESSING 5
 #endif
 
 #ifndef TYPE_SYM_TBL_RESIZE
@@ -69,7 +69,7 @@ inline void type_sym_tbl_item_free(type_sym_tbl_item *item) {
 
 typedef struct {
     size_t used, size;
-    type_sym_tbl_item *buckets[];
+    type_sym_tbl_item *buckets[]; // open address
 } type_sym_tbl;
 
 inline type_sym_tbl *type_sym_tbl_init(size_t size) {
@@ -91,7 +91,7 @@ typedef enum {
     TYPE_SYM_TBL_STATUS_PFX(NOT_FOUND),
     TYPE_SYM_TBL_STATUS_PFX(ALLREADY_EXISTS),
     TYPE_SYM_TBL_STATUS_PFX(VAR_GROUP_MISMATCH),
-    TYPE_SYM_TBL_STATUS_PFX(REHASHING_FALIED)
+    TYPE_SYM_TBL_STATUS_PFX(ADDRESSING_FALIED)
 } type_sym_tbl_status;
 
 // entry is the found item or the inserted item

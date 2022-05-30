@@ -18,10 +18,10 @@ static size_t djb2(const char *str) {
 
 type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, var_group group, size_t len, const char *const v_name, bool find_only, bool insert_only) {
     size_t hash = djb2(v_name);
-    size_t idx, rehash = 0;
+    size_t idx, addressing = 0;
     type_sym_tbl_item *tmp = NULL;
-    while (rehash < TYPE_SYM_TBL_REHASH) {
-        tmp = (*tbl)->buckets[idx = (hash + rehash++) % (*tbl)->size];
+    while (addressing < TYPE_SYM_TBL_ADDRESSING) {
+        tmp = (*tbl)->buckets[idx = (hash + addressing++) % (*tbl)->size];
         if (tmp == NULL || (len == tmp->len && strcmp(v_name, tmp->v_name) == 0)) break; // not found || found
     }
     if (tmp != NULL && group != tmp->group) return TYPE_SYM_TBL_STATUS_PFX(VAR_GROUP_MISMATCH);
@@ -31,24 +31,24 @@ type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item
         *entry = tmp;
         return TYPE_SYM_TBL_STATUS_PFX(FOUND);
     }
-    if (tmp == NULL && rehash == TYPE_SYM_TBL_REHASH) {
+    if (tmp == NULL && addressing == TYPE_SYM_TBL_ADDRESSING) {
         // resize and rebuild tbl
         type_sym_tbl *new_tbl = type_sym_tbl_init((*tbl)->size * TYPE_SYM_TBL_RESIZE);
         for (size_t i = 0; i < (*tbl)->size; i++) {
-            idx = rehash = 0;
+            idx = addressing = 0;
             tmp = (*tbl)->buckets[i];
             if (tmp == NULL) continue;
             hash = djb2(tmp->v_name);
-            while (rehash < TYPE_SYM_TBL_REHASH) {
-                if (new_tbl->buckets[idx = (hash + rehash++) % new_tbl->size] == NULL) {
+            while (addressing < TYPE_SYM_TBL_ADDRESSING) {
+                if (new_tbl->buckets[idx = (hash + addressing++) % new_tbl->size] == NULL) {
                     new_tbl->buckets[idx] = tmp;
                     new_tbl->used++;
                     break;
                 }
             }
-            if (rehash == TYPE_SYM_TBL_REHASH) {
+            if (addressing == TYPE_SYM_TBL_ADDRESSING) {
                 free(new_tbl); // delete new tbl
-                return TYPE_SYM_TBL_STATUS_PFX(REHASHING_FALIED);
+                return TYPE_SYM_TBL_STATUS_PFX(ADDRESSING_FALIED);
             }
         }
         free(*tbl); // don't run tbl_free old items moved not copied
