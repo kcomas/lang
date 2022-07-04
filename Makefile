@@ -13,10 +13,14 @@ CCOBJ = $(CC) -o $@ $^
 TOKEN_SOURCES = $(SRC)/token.o
 PARSER_SOURCES = $(SRC)/parser.o $(TOKEN_SOURCES)
 TYPE_SOURCES = $(SRC)/type.o
+AST_SOURCES = $(PARSER_SOURCES) $(TYPE_SOURCES)
 
 all: $(NAME)
 
 $(NAME): $(OBJECTS)
+	$(CCOBJ)
+
+ast$(TNAME): $(AST_SOURCES) $(TEST)/ast.o $(TMAIN)
 	$(CCOBJ)
 
 type$(TNAME): $(TYPE_SOURCES) $(TEST)/type.o $(TMAIN)

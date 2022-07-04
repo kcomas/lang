@@ -8,6 +8,7 @@
 #define TYPE_NAME_PFX(NAME) TYPE_NAME_##NAME
 
 typedef enum {
+    TYPE_NAME_PFX(UNKNOWN),
     TYPE_NAME_PFX(U0), // void, internal use only
     TYPE_NAME_PFX(U1), // bool
     TYPE_NAME_PFX(U8),

@@ -207,6 +207,7 @@ typedef struct {
 } parser_state;
 
 inline void parser_state_init(parser_state *const ps, char *const str) {
+    ps->t_status = TOKEN_STATUS_PFX(OK);
     token_state_init(&ps->t_state);
     token_init(&ps->tn);
     token_init(&ps->tp);

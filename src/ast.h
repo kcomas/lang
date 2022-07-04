@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "type.h"
+#include "parser.h"
 
 #define AST_TYPE_PFX(NAME) AST_TYPE_PFX_##NAME
 
@@ -30,6 +31,7 @@ typedef struct {
 } ast_fn;
 
 typedef union {
+    type_sym_tbl_item *var;
     ast_int *aint;
     ast_fn *fn;
 } ast_data;
@@ -38,3 +40,25 @@ typedef struct _ast_node {
     ast_type type;
     ast_data data;
 } ast_node;
+
+#define AST_STATUS_PFX(NAME) AST_TYPE_PFX_##NAME
+
+typedef enum {
+    AST_STATUS_PFX(OK),
+    AST_STATUS_PFX(PARSER_FAIL)
+} ast_status;
+
+typedef struct {
+    parser_status p_status;
+    parser_state p_state;
+    parser_node *p_node;
+} ast_state;
+
+inline void ast_state_init(ast_state *const as, char *const str) {
+    as->p_status = PARSER_STATUS_PFX(OK);
+    parser_state_init(&as->p_state, str);
+    as->p_node = NULL;
+}
+
+// parent fn holds node and it is initialized to NULL
+ast_status ast_parse_expr(ast_state *const as, ast_node **node);

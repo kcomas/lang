@@ -108,9 +108,9 @@ TEST(define_var_u64) {
 }
 
 TEST(add_fn_call) {
-    PARSER_TEST_INIT(parser_parse_expr, "a: +(1;3 - 2) * 4");
-    parser_node *call = GET_NODE(CALL, OP_NODE(ADD, NULL, NULL), 2, NODE_LIST(BUF_NODE(INT, 1), OP_NODE(SUB, BUF_NODE(INT, 3), BUF_NODE(INT, 2))));
-    parser_node *test = OP_NODE(ASSIGN, BUF_NODE(VAR, a), OP_NODE(MUL, call, BUF_NODE(INT, 4)));
+    PARSER_TEST_INIT(parser_parse_expr, "a: +(1;3 * 2) - 4");
+    parser_node *call = GET_NODE(CALL, OP_NODE(ADD, NULL, NULL), 2, NODE_LIST(BUF_NODE(INT, 1), OP_NODE(MUL, BUF_NODE(INT, 3), BUF_NODE(INT, 2))));
+    parser_node *test = OP_NODE(ASSIGN, BUF_NODE(VAR, a), OP_NODE(SUB, call, BUF_NODE(INT, 4)));
     PARSER_TEST_VERIFY(test);
 }
 
