@@ -196,7 +196,8 @@ typedef enum {
     PARSER_STATUS_PFX(INVALID_INDEX),
     PARSER_STATUS_PFX(INVALID_CALL),
     PARSER_STATUS_PFX(TOO_MANY_CALL_ARGS),
-    PARSER_STATUS_PFX(INVALID_DEFINE)
+    PARSER_STATUS_PFX(INVALID_DEFINE),
+    PARSER_STATUS_PFX(INVALID_MODULE)
 } parser_status;
 
 typedef struct {
@@ -216,3 +217,19 @@ inline void parser_state_init(parser_state *const ps, char *const str) {
 
 // parent fn holds found node and initialized to NULL
 parser_status parser_parse_expr(parser_state *const ps, parser_node **node);
+
+typedef struct {
+    parser_node_list body;
+} parser_module;
+
+inline void parser_module_init(parser_module *const module) {
+    module->body.len = 0;
+    module->body.head = NULL;
+    module->body.tail = NULL;
+}
+
+inline void parser_module_free(parser_module *const module) {
+    parser_node_list_free(&module->body);
+}
+
+parser_status parser_parse_module(parser_state *const ps, parser_module *module);

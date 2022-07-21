@@ -17,8 +17,7 @@ static size_t djb2(const char *str) {
 }
 
 type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, var_group group, size_t len, const char *const v_name, bool find_only, bool insert_only) {
-    size_t hash = djb2(v_name);
-    size_t idx, addressing = 0;
+    size_t hash = djb2(v_name), idx, addressing = 0;
     type_sym_tbl_item *tmp = NULL;
     while (addressing < TYPE_SYM_TBL_ADDRESSING) {
         tmp = (*tbl)->buckets[idx = (hash + addressing++) % (*tbl)->size];

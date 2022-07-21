@@ -51,14 +51,13 @@ typedef enum {
 typedef struct {
     parser_status p_status;
     parser_state p_state;
-    parser_node *p_node;
+    parser_module p_module;
 } ast_state;
 
-inline void ast_state_init(ast_state *const as, char *const str) {
-    as->p_status = PARSER_STATUS_PFX(OK);
+inline ast_status ast_state_init(ast_state *const as, char *const str) {
     parser_state_init(&as->p_state, str);
     as->p_node = NULL;
+    p_status = parser_parse_module(&as->p_state, &as->p_node);
+    if (p_status != PARSER_STATUS_PFX(OK)) return AST_STATUS_PFX(PARSER_FAIL);
+    return AST_STATUS_PFX(OK);
 }
-
-// parent fn holds node and it is initialized to NULL
-ast_status ast_parse_expr(ast_state *const as, ast_node **node);

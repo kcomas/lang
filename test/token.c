@@ -125,6 +125,20 @@ TEST(vec_direct_index) {
     TOKEN_ASSERT(END, 1, 19, 18, 18);
 }
 
+TEST(basic_multiline) {
+    TOKEN_TEST_INIT("a: 1\nb: a + 2");
+    TOKEN_ASSERT(VAR, 1, 1, 0, 0);
+    TOKEN_ASSERT(ASSIGN, 1, 2, 1, 1);
+    TOKEN_ASSERT(INT, 1, 4, 3, 3);
+    TOKEN_ASSERT(NEWLINE, 1, 5, 4, 4);
+    TOKEN_ASSERT(VAR, 2, 1, 5, 5);
+    TOKEN_ASSERT(ASSIGN, 2, 2, 6, 6);
+    TOKEN_ASSERT(VAR, 2, 4, 8, 8);
+    TOKEN_ASSERT(ADD, 2, 6, 10, 10);
+    TOKEN_ASSERT(INT, 2, 8, 12, 12);
+    TOKEN_ASSERT(END, 2, 9, 13, 13);
+}
+
 INIT_TESTS(
     ADD_TEST(arith_with_comment);
     ADD_TEST(define_var_u64);
@@ -132,4 +146,5 @@ INIT_TESTS(
     ADD_TEST(negate);
     ADD_TEST(fn_direct_call);
     ADD_TEST(vec_direct_index);
+    ADD_TEST(basic_multiline);
 )

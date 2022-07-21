@@ -152,6 +152,10 @@ bool fn_body_token_type_stop(token_type type) {
     return type == TOKEN_PFX(RBRACE);
 }
 
+bool module_token_type_stop(token_type type) {
+    return type == TOKEN_PFX(END);
+}
+
 #define STMT_TO_STOP(NODE, LIST_TGT, STOP_FN, STOP_TOKEN, NODE_FREE_FN, ERROR) do { \
         if ((status = parser_parse_stmt(ps, &NODE->LIST_TGT, &STOP_FN)) != PARSER_STATUS_PFX(OK)) return status; \
         /* make sure STOP_TOKEN was reached */ \
@@ -258,5 +262,15 @@ parser_status parser_parse_expr(parser_state *const ps, parser_node **node) {
         TOKEN_TO_OP(EXP);
         TOKEN_TO_OP(DIV);
     }
+    return PARSER_STATUS_PFX(OK);
+}
+
+extern inline void parser_module_init(parser_module *const module);
+
+extern inline void parser_module_free(parser_module *const module);
+
+parser_status parser_parse_module(parser_state *const ps, parser_module *const module) {
+    parser_status status;
+    STMT_TO_STOP(module, body, module_token_type_stop, END, parser_module_free, INVALID_MODULE);
     return PARSER_STATUS_PFX(OK);
 }
