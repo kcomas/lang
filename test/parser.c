@@ -136,6 +136,26 @@ TEST(vec_direct_index) {
     PARSER_TEST_VERIFY(test);
 }
 
+TEST(basic_multiline) {
+    token t_ignore;
+    token_init(&t_ignore);
+    parser_state ps;
+    parser_state_init(&ps, "a: 1\nb: a + 2");
+    parser_module m;
+    parser_module_init(&m);
+    if (parser_parse_module(&ps, &m) != PARSER_STATUS_PFX(OK)) TEST_FAIL();
+    if (ps.tn.type != TOKEN_PFX(END)) TEST_FAIL();
+    parser_module test;
+    parser_module_init(&test);
+    parser_node *a = OP_NODE(ASSIGN, BUF_NODE(VAR, a), BUF_NODE(INT, 1));
+    parser_node *b = OP_NODE(ASSIGN, BUF_NODE(VAR, b), OP_NODE(ADD, BUF_NODE(VAR, a), BUF_NODE(INT, 2)));
+    ADD_TO_LIST(&test.body, 2, NODE_LIST(a, b));
+    if (!verify_list(&m.body, &test.body)) TEST_FAIL();
+    parser_module_free(&test);
+    parser_module_free(&m);
+}
+
+
 INIT_TESTS(
     ADD_TEST(arith_with_comment);
     ADD_TEST(define_var_u64);
@@ -143,4 +163,5 @@ INIT_TESTS(
     ADD_TEST(negate);
     ADD_TEST(fn_direct_call);
     ADD_TEST(vec_direct_index);
+    ADD_TEST(basic_multiline);
 )
