@@ -12,6 +12,7 @@ typedef enum {
     PARSER_NODE_TYPE_PFX(STR),
     PARSER_NODE_TYPE_PFX(U64),
     PARSER_NODE_TYPE_PFX(FN),
+    PARSER_NODE_TYPE_PFX(MOD),
     PARSER_NODE_TYPE_PFX(VEC),
     PARSER_NODE_TYPE_PFX(INDEX),
     PARSER_NODE_TYPE_PFX(CALL),
@@ -30,6 +31,10 @@ inline bool parser_node_type_is_buf(parser_node_type type) {
 
 inline bool parser_node_type_is_type(parser_node_type type) {
     return type >= PARSER_NODE_TYPE_PFX(U64) && type <= PARSER_NODE_TYPE_PFX(U64);
+}
+
+inline bool parser_node_type_is_list(parser_node_type type) {
+    return type >= PARSER_NODE_TYPE_PFX(MOD) && type <= PARSER_NODE_TYPE_PFX(VEC);
 }
 
 inline bool parser_node_type_is_get(parser_node_type type) {
@@ -53,6 +58,10 @@ typedef struct _parser_node_list {
     size_t len;
     parser_node_list_item *head, *tail;
 } parser_node_list;
+
+inline parser_node_list *parser_node_list_init(void) {
+    return calloc(1, sizeof(parser_node_list));
+}
 
 inline void parser_node_list_free(parser_node_list *list) {
     parser_node_list_item *head = list->head;
@@ -109,19 +118,6 @@ inline void parser_node_fn_free(parser_node_fn *fn) {
 }
 
 typedef struct {
-    parser_node_list items;
-} parser_node_vec;
-
-inline parser_node_vec *parser_node_vec_init(void) {
-    return calloc(1, sizeof(parser_node_vec));
-}
-
-inline void parser_node_vec_free(parser_node_vec *vec) {
-    parser_node_list_free(&vec->items);
-    free(vec);
-}
-
-typedef struct {
     parser_node *tgt;
     parser_node_list args;
 } parser_node_get;
@@ -160,7 +156,7 @@ typedef union {
     parser_node_buf *buf;
     parser_node_op *op;
     parser_node_fn *fn;
-    parser_node_vec *vec;
+    parser_node_list *list;
     parser_node_get *get;
 } parser_node_data;
 
@@ -187,7 +183,7 @@ typedef enum {
     PARSER_STATUS_PFX(TOKENIZER_ERROR),
     PARSER_STATUS_PFX(NODE_FOR_BUF_NOT_NULL),
     PARSER_STATUS_PFX(NODE_FOR_TYPE_NOT_NULL),
-    PARSER_STATUS_PFX(NODE_FOR_FN_NOT_NULL),
+    PARSER_STATUS_PFX(NODE_FOR_MOD_FN_NOT_NULL),
     PARSER_STATUS_PFX(NODE_FOR_CALL_NULL),
     PARSER_STATUS_PFX(INVALID_FN_ARGS),
     PARSER_STATUS_PFX(TOO_MANY_FN_ARGS),
@@ -215,21 +211,7 @@ inline void parser_state_init(parser_state *const ps, char *const str) {
     ps->str = str;
 }
 
-// parent fn holds found node and initialized to NULL
+// parent fn holds found node and initialized to NULL for both public parser fns
 parser_status parser_parse_expr(parser_state *const ps, parser_node **node);
 
-typedef struct {
-    parser_node_list body;
-} parser_module;
-
-inline void parser_module_init(parser_module *const module) {
-    module->body.len = 0;
-    module->body.head = NULL;
-    module->body.tail = NULL;
-}
-
-inline void parser_module_free(parser_module *const module) {
-    parser_node_list_free(&module->body);
-}
-
-parser_status parser_parse_module(parser_state *const ps, parser_module *module);
+parser_status parser_parser_mod(parser_state *const ps, parser_node **node);

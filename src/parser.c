@@ -5,9 +5,13 @@ extern inline bool parser_node_type_is_buf(parser_node_type type);
 
 extern inline bool parser_node_type_is_type(parser_node_type type);
 
+extern inline bool parser_node_type_is_list(parser_node_type type);
+
 extern inline bool parser_node_type_is_get(parser_node_type type);
 
 extern inline bool parser_node_type_is_op(parser_node_type type);
+
+extern inline parser_node_list *parser_node_list_init(void);
 
 extern inline void parser_node_list_free(parser_node_list *list);
 
@@ -42,10 +46,6 @@ extern inline parser_node_fn *parser_node_fn_init(void);
 
 extern inline void parser_node_fn_free(parser_node_fn *fn);
 
-extern inline parser_node_vec *parser_node_vec_init(void);
-
-extern inline void parser_node_vec_free(parser_node_vec *vec);
-
 extern inline parser_node_get *parser_node_get_init(parser_node *tgt);
 
 extern inline void parser_node_get_free(parser_node_get *get);
@@ -76,11 +76,14 @@ void parser_node_free(parser_node *node) {
             break;
         case PARSER_NODE_TYPE_PFX(U64):
             break;
+        case PARSER_NODE_TYPE_PFX(MOD):
+            parser_node_list_free(node->data.list);
+            break;
         case PARSER_NODE_TYPE_PFX(FN):
             parser_node_fn_free(node->data.fn);
             break;
         case PARSER_NODE_TYPE_PFX(VEC):
-            parser_node_vec_free(node->data.vec);
+            parser_node_list_free(node->data.list);
             break;
         case PARSER_NODE_TYPE_PFX(INDEX):
         case PARSER_NODE_TYPE_PFX(CALL):
@@ -141,23 +144,23 @@ static parser_status parser_parse_stmt(parser_state *const ps, parser_node_list 
 }
 
 bool parens_token_type_stop(token_type type) {
-    return type == TOKEN_PFX(RPARENS) || type == TOKEN_PFX(NEWLINE); // stop \n separation
+    return type == TOKEN_PFX(RPARENS) || type == TOKEN_PFX(NEWLINE); // stop \n separation and error
 }
 
 bool bracket_token_type_stop(token_type type) {
-    return type == TOKEN_PFX(RBRACKET) || type == TOKEN_PFX(NEWLINE); // stop \n separation
+    return type == TOKEN_PFX(RBRACKET) || type == TOKEN_PFX(NEWLINE); // stop \n separation and error
 }
 
 bool fn_body_token_type_stop(token_type type) {
     return type == TOKEN_PFX(RBRACE);
 }
 
-bool module_token_type_stop(token_type type) {
+bool mod_token_type_stop(token_type type) {
     return type == TOKEN_PFX(END);
 }
 
-#define STMT_TO_STOP(NODE, LIST_TGT, STOP_FN, STOP_TOKEN, NODE_FREE_FN, ERROR) do { \
-        if ((status = parser_parse_stmt(ps, &NODE->LIST_TGT, &STOP_FN)) != PARSER_STATUS_PFX(OK)) return status; \
+#define STMT_TO_STOP(NODE, LIST, STOP_FN, STOP_TOKEN, NODE_FREE_FN, ERROR) do { \
+        if ((status = parser_parse_stmt(ps, LIST, &STOP_FN)) != PARSER_STATUS_PFX(OK)) return status; \
         /* make sure STOP_TOKEN was reached */ \
         if (ps->tn.type != TOKEN_PFX(STOP_TOKEN)) { \
             NODE_FREE_FN(NODE); \
@@ -167,14 +170,14 @@ bool module_token_type_stop(token_type type) {
 
 static parser_status parser_parse_fn(parser_state *const ps, parser_node **node) {
     parser_status status;
-    if (*node != NULL) return PARSER_STATUS_PFX(NODE_FOR_FN_NOT_NULL);
+    if (*node != NULL) return PARSER_STATUS_PFX(NODE_FOR_MOD_FN_NOT_NULL);
     // start at first {
     token t_tmp = ps->tn;
     TOKEN_NEXT(false); // at (
     parser_node_fn *fn = parser_node_fn_init();
-    STMT_TO_STOP(fn, args, parens_token_type_stop, RPARENS, parser_node_fn_free, INVALID_FN_ARGS);
+    STMT_TO_STOP(fn, &fn->args, parens_token_type_stop, RPARENS, parser_node_fn_free, INVALID_FN_ARGS);
     if (fn->args.len > MAX_ARGS + 1) return PARSER_STATUS_PFX(TOO_MANY_FN_ARGS); // more then ret + max args
-    STMT_TO_STOP(fn, body, fn_body_token_type_stop, RBRACE, parser_node_fn_free, INVALID_FN_BODY);
+    STMT_TO_STOP(fn, &fn->body, fn_body_token_type_stop, RBRACE, parser_node_fn_free, INVALID_FN_BODY);
     *node = parser_node_init(PARSER_NODE_TYPE_PFX(FN), &t_tmp, (parser_node_data) { .fn = fn });
     return parser_parse_expr(ps, node);
 }
@@ -185,9 +188,9 @@ static parser_status parser_parser_vec_index(parser_state *const ps, parser_node
     token t_tmp = ps->tn;
     // if the previous node is null or its a op with no args [] is a vec, otherwise [] is an index
     if (*node == NULL || (parser_node_type_is_op((*node)->type) && parser_node_op_empty((*node)->data.op))) {
-        parser_node_vec *vec = parser_node_vec_init();
-        STMT_TO_STOP(vec, items, bracket_token_type_stop, RBRACKET, parser_node_vec_free, INVALID_VEC);
-        parser_node *tmp_node  = parser_node_init(PARSER_NODE_TYPE_PFX(VEC), &t_tmp, (parser_node_data) { .vec = vec });
+        parser_node_list *vec = parser_node_list_init();
+        STMT_TO_STOP(vec, vec, bracket_token_type_stop, RBRACKET, parser_node_list_free, INVALID_VEC);
+        parser_node *tmp_node  = parser_node_init(PARSER_NODE_TYPE_PFX(VEC), &t_tmp, (parser_node_data) { .list = vec });
         if (*node == NULL) {
             *node = tmp_node;
         } else {
@@ -197,7 +200,7 @@ static parser_status parser_parser_vec_index(parser_state *const ps, parser_node
         }
     } else {
         parser_node_get *get = parser_node_get_init(*node);
-        STMT_TO_STOP(get, args, bracket_token_type_stop, RBRACKET, parser_node_get_free, INVALID_INDEX);
+        STMT_TO_STOP(get, &get->args, bracket_token_type_stop, RBRACKET, parser_node_get_free, INVALID_INDEX);
         *node = parser_node_init(PARSER_NODE_TYPE_PFX(INDEX), &t_tmp, (parser_node_data) { .get = get });
     }
     return parser_parse_expr(ps, node);
@@ -209,7 +212,7 @@ static parser_status parser_parse_call(parser_state *const ps, parser_node **nod
     // start the list at the first (
     token t_tmp = ps->tn;
     parser_node_get *get = parser_node_get_init(*node);
-    STMT_TO_STOP(get, args, parens_token_type_stop, RPARENS, parser_node_get_free, INVALID_CALL);
+    STMT_TO_STOP(get, &get->args, parens_token_type_stop, RPARENS, parser_node_get_free, INVALID_CALL);
     if (get->args.len > MAX_ARGS) return PARSER_STATUS_PFX(TOO_MANY_CALL_ARGS);
     *node = parser_node_init(PARSER_NODE_TYPE_PFX(CALL), &t_tmp, (parser_node_data) { .get = get });
     return parser_parse_expr(ps, node);
@@ -265,12 +268,13 @@ parser_status parser_parse_expr(parser_state *const ps, parser_node **node) {
     return PARSER_STATUS_PFX(OK);
 }
 
-extern inline void parser_module_init(parser_module *const module);
-
-extern inline void parser_module_free(parser_module *const module);
-
-parser_status parser_parse_module(parser_state *const ps, parser_module *const module) {
-    parser_status status;
-    STMT_TO_STOP(module, body, module_token_type_stop, END, parser_module_free, INVALID_MODULE);
+parser_status parser_parser_mod(parser_state *const ps, parser_node **node) {
+parser_status status;
+    if (*node != NULL) return PARSER_STATUS_PFX(NODE_FOR_MOD_FN_NOT_NULL);
+    // use the starting of the file with 0 line and 0 char
+    token t_tmp = { 0 };
+    parser_node_list *mod = parser_node_list_init();
+    STMT_TO_STOP(mod, mod, mod_token_type_stop, END, parser_node_list_free, INVALID_MODULE);
+    *node = parser_node_init(PARSER_NODE_TYPE_PFX(MOD), &t_tmp, (parser_node_data) { .list = mod });
     return PARSER_STATUS_PFX(OK);
 }

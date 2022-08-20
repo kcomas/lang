@@ -29,13 +29,13 @@ static parser_node *fn_node(const token *const t_ignore, size_t arg_len, parser_
 
 #define FN_NODE(ARG_LEN, ARGS, BODY_LEN, BODY) fn_node(&t_ignore, ARG_LEN, ARGS, BODY_LEN, BODY)
 
-static parser_node *vec_node(const token *const t_ignore, size_t item_len, parser_node *const items[]) {
-    parser_node_vec *vec = parser_node_vec_init();
-    ADD_TO_LIST(&vec->items, item_len, items);
-    return parser_node_init(PARSER_NODE_TYPE_PFX(VEC), t_ignore, (parser_node_data) { .vec = vec });
+static parser_node *list_node(parser_node_type type, const token *const t_ignore, size_t item_len, parser_node *const items[]) {
+    parser_node_list *list = parser_node_list_init();
+    ADD_TO_LIST(list, item_len, items);
+    return parser_node_init(type, t_ignore, (parser_node_data) { .list = list });
 }
 
-#define VEC_NODE(ITEM_LEN, ITEMS) vec_node(&t_ignore, ITEM_LEN, ITEMS);
+#define LIST_NODE(TYPE, ITEM_LEN, ITEMS) list_node(PARSER_NODE_TYPE_PFX(TYPE), &t_ignore, ITEM_LEN, ITEMS);
 
 static parser_node *get_node(parser_node_type type, const token *const t_ignore, parser_node *const tgt, size_t arg_len, parser_node *const args[]) {
     parser_node_get *get = parser_node_get_init(tgt);
@@ -75,7 +75,7 @@ static bool verify_expr(const parser_node *restrict const a, const parser_node *
     if (parser_node_type_is_buf(a->type)) return a->data.buf->len == b->data.buf->len && strcmp(a->data.buf->buf, b->data.buf->buf) == 0;
     else if (parser_node_type_is_type(a->type)) return true;
     else if (a->type == PARSER_NODE_TYPE_PFX(FN)) return verify_list(&a->data.fn->args, &b->data.fn->args) && verify_list(&a->data.fn->body, &b->data.fn->body);
-    else if (a->type == PARSER_NODE_TYPE_PFX(VEC)) return verify_list(&a->data.vec->items, &b->data.vec->items);
+    else if (parser_node_type_is_list(a->type)) return verify_list(a->data.list, b->data.list);
     else if (parser_node_type_is_get(a->type)) return verify_expr(a->data.get->tgt, b->data.get->tgt) && verify_list(&a->data.get->args, &b->data.get->args);
     else if (parser_node_type_is_op(a->type)) return verify_expr(a->data.op->left, b->data.op->left) && verify_expr(a->data.op->right, b->data.op->right);
     return false;
@@ -130,33 +130,18 @@ TEST(fn_direct_call) {
 
 TEST(vec_direct_index) {
     PARSER_TEST_INIT(parser_parse_expr, "a: 12 + [1; 2; 3][2]");
-    parser_node *vec = VEC_NODE(3, NODE_LIST(BUF_NODE(INT, 1), BUF_NODE(INT, 2), BUF_NODE(INT, 3)));
+    parser_node *vec = LIST_NODE(VEC, 3, NODE_LIST(BUF_NODE(INT, 1), BUF_NODE(INT, 2), BUF_NODE(INT, 3)));
     parser_node *index = GET_NODE(INDEX, vec, 1, NODE_LIST(BUF_NODE(INT, 2)));
     parser_node *test = OP_NODE(ASSIGN, BUF_NODE(VAR, a), OP_NODE(ADD, BUF_NODE(INT, 12), index));
     PARSER_TEST_VERIFY(test);
 }
 
-#define PARSER_MODULE_TEST_INIT(STR) token t_ignore; \
-    token_init(&t_ignore); \
-    parser_state ps; \
-    parser_state_init(&ps, STR); \
-    parser_module m; \
-    parser_module_init(&m); \
-    if (parser_parse_module(&ps, &m) != PARSER_STATUS_PFX(OK)) TEST_FAIL(); \
-    if (ps.tn.type != TOKEN_PFX(END)) TEST_FAIL();
-
-#define PARSER_MODULE_TEST_VERIFY(LIST_LEN, NODES...) parser_module test; \
-    parser_module_init(&test); \
-    ADD_TO_LIST(&test.body, LIST_LEN, NODE_LIST(NODES)); \
-    if (!verify_list(&m.body, &test.body)) TEST_FAIL(); \
-    parser_module_free(&m); \
-    parser_module_free(&test);
-
 TEST(basic_multiline) {
-    PARSER_MODULE_TEST_INIT("a: 1\nb: a + 2");
+    PARSER_TEST_INIT(parser_parser_mod, "a: 1\nb: a + 2");
     parser_node *a = OP_NODE(ASSIGN, BUF_NODE(VAR, a), BUF_NODE(INT, 1));
     parser_node *b = OP_NODE(ASSIGN, BUF_NODE(VAR, b), OP_NODE(ADD, BUF_NODE(VAR, a), BUF_NODE(INT, 2)));
-    PARSER_MODULE_TEST_VERIFY(2, a, b);
+    parser_node *test = LIST_NODE(MOD, 2, NODE_LIST(a, b));
+    PARSER_TEST_VERIFY(test);
 }
 
 INIT_TESTS(
