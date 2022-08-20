@@ -77,13 +77,12 @@ void parser_node_free(parser_node *node) {
         case PARSER_NODE_TYPE_PFX(U64):
             break;
         case PARSER_NODE_TYPE_PFX(MOD):
+        case PARSER_NODE_TYPE_PFX(VEC):
             parser_node_list_free(node->data.list);
+            free(node->data.list);
             break;
         case PARSER_NODE_TYPE_PFX(FN):
             parser_node_fn_free(node->data.fn);
-            break;
-        case PARSER_NODE_TYPE_PFX(VEC):
-            parser_node_list_free(node->data.list);
             break;
         case PARSER_NODE_TYPE_PFX(INDEX):
         case PARSER_NODE_TYPE_PFX(CALL):

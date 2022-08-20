@@ -51,7 +51,7 @@ typedef enum {
 typedef struct {
     parser_status p_status;
     parser_state p_state;
-    parser_module p_module;
+    parser_node *p_node;
 } ast_state;
 
 inline ast_status ast_state_init(ast_state *const as, char *const str) {
