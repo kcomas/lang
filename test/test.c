@@ -1,7 +1,7 @@
 
 #include "test.h"
 
-extern inline test_item *test_item_init(const char *const name, test_fn fn);
+extern inline test_item *test_item_init(const char *const name, test_fn *const fn);
 
 extern inline void test_item_free(test_item *const ti);
 

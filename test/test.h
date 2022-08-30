@@ -23,7 +23,7 @@ typedef struct _test_item {
     test_item *next;
 } test_item;
 
-inline test_item *test_item_init(const char *const name, test_fn *fn) {
+inline test_item *test_item_init(const char *const name, test_fn *const fn) {
     test_item *ti = calloc(1, sizeof(test_item));
     ti->name = name;
     ti->fn = fn;

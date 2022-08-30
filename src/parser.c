@@ -127,9 +127,9 @@ static parser_status parser_token_peek(parser_state *const ps, bool ignore_nl) {
 #define TOKEN_PEEK(IGNORE_NL) \
     if ((status = parser_token_peek(ps, IGNORE_NL)) != PARSER_STATUS_PFX(OK)) return status
 
-typedef bool stmt_token_type_stop(token_type type);
+typedef bool stmt_token_type_stop_fn(token_type type);
 
-static parser_status parser_parse_stmt(parser_state *const ps, parser_node_list *const nl, stmt_token_type_stop *stop_fn) {
+static parser_status parser_parse_stmt(parser_state *const ps, parser_node_list *const nl, stmt_token_type_stop_fn *const stop_fn) {
     parser_status status;
     parser_node *tmp_node;
     for (;;) {

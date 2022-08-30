@@ -23,7 +23,6 @@ type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item
         tmp = (*tbl)->buckets[idx = (hash + addressing++) % (*tbl)->size];
         if (tmp == NULL || (len == tmp->len && strcmp(v_name, tmp->v_name) == 0)) break; // not found || found
     }
-    if (tmp != NULL && group != tmp->group) return TYPE_SYM_TBL_STATUS_PFX(VAR_GROUP_MISMATCH);
     if (tmp == NULL && find_only) return TYPE_SYM_TBL_STATUS_PFX(NOT_FOUND);
     if (tmp != NULL && insert_only) return TYPE_SYM_TBL_STATUS_PFX(ALLREADY_EXISTS);
     if (tmp != NULL) {

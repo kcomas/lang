@@ -54,10 +54,9 @@ typedef struct {
     parser_node *p_node;
 } ast_state;
 
-inline ast_status ast_state_init(ast_state *const as, char *const str) {
+inline ast_status ast_state_init(ast_state *const as, char *const str, parser_parse *const parser_fn) {
     parser_state_init(&as->p_state, str);
     as->p_node = NULL;
-    p_status = parser_parse_module(&as->p_state, &as->p_module);
-    if (p_status != PARSER_STATUS_PFX(OK)) return AST_STATUS_PFX(PARSER_FAIL);
+    if ((as->p_status = parser_fn(&as->p_state, &as->p_node)) != PARSER_STATUS_PFX(OK)) return AST_STATUS_PFX(PARSER_FAIL);
     return AST_STATUS_PFX(OK);
 }
