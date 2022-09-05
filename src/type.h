@@ -29,23 +29,14 @@ typedef struct _type type;
 
 void type_free(type *t);
 
-#define VAR_GROUP_PFX(NAME) VAR_GROUP_##NAME
-
-typedef enum {
-    VAR_GROUP_PFX(ARG),
-    VAR_GROUP_PFX(LOCAL)
-} var_group;
-
 typedef struct {
-    var_group group;
     size_t len; // does not inc null term
     type *v_type;
     char v_name[]; // must be null termed
 } type_sym_tbl_item;
 
-inline type_sym_tbl_item *type_sym_tbl_item_init(var_group group, size_t len, const char *const v_name) {
+inline type_sym_tbl_item *type_sym_tbl_item_init(size_t len, const char *const v_name) {
     type_sym_tbl_item *item = calloc(1, sizeof(type_sym_tbl_item) + sizeof(char) * len + sizeof(char));
-    item->group = group;
     item->len = len;
     strcpy(item->v_name, v_name);
     return item;
@@ -94,25 +85,41 @@ typedef enum {
     TYPE_SYM_TBL_STATUS_PFX(ADDRESSING_FALIED)
 } type_sym_tbl_status;
 
-// entry is the found item or the inserted item group is only used for adding new items does nothing for finding
-type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, var_group group, size_t len, const char *const v_name, bool find_only, bool insert_only);
+// entry is the found item or the inserted item
+type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name, bool find_only, bool insert_only);
 
-inline type_sym_tbl_status type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, var_group group, size_t len, const char *const v_name) {
-    return _type_sym_tbl_findsert(tbl, entry, group, len, v_name, false, false);
+inline type_sym_tbl_status type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name) {
+    return _type_sym_tbl_findsert(tbl, entry, len, v_name, false, false);
 }
 
-inline type_sym_tbl_status type_sym_tbl_find(type_sym_tbl **tbl, type_sym_tbl_item **entry, var_group group, size_t len, const char *const v_name) {
-    return _type_sym_tbl_findsert(tbl, entry, group, len, v_name, true, false);
+inline type_sym_tbl_status type_sym_tbl_find(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name) {
+    return _type_sym_tbl_findsert(tbl, entry, len, v_name, true, false);
 }
 
-inline type_sym_tbl_status type_sym_tbl_insert(type_sym_tbl **tbl, type_sym_tbl_item **entry, var_group group, size_t len, const char *const v_name) {
-    return _type_sym_tbl_findsert(tbl, entry, group, len, v_name, false, true);
+inline type_sym_tbl_status type_sym_tbl_insert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name) {
+    return _type_sym_tbl_findsert(tbl, entry, len, v_name, false, true);
 }
+
+typedef struct {
+    size_t exports_len;
+    type_sym_tbl *tbl;
+    type_sym_tbl_item *exports;
+} type_mod;
+
+#define PARENT_TYPE_PFX(NAME) PARENT_TYPE_PFX_##NAME
+
+typedef enum {
+    PARENT_TYPE_PFX(MOD),
+    PARENT_TYPE_PFX(FN)
+} parent_type;
 
 typedef struct _type_fn {
     size_t args_len;
     type *ret;
-    struct _type_fn *parent;
+    union {
+        type_mod *mod;
+        struct _type_fn *fn;
+    } parent;
     type_sym_tbl *tbl;
     type_sym_tbl_item *args[];
 } type_fn;

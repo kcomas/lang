@@ -1,7 +1,7 @@
 
 #include "type.h"
 
-extern inline type_sym_tbl_item *type_sym_tbl_item_init(var_group group, size_t len, const char *const v_name);
+extern inline type_sym_tbl_item *type_sym_tbl_item_init(size_t len, const char *const v_name);
 
 extern inline void type_sym_tbl_item_free(type_sym_tbl_item *item);
 
@@ -16,7 +16,7 @@ static size_t djb2(const char *str) {
     return hash;
 }
 
-type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, var_group group, size_t len, const char *const v_name, bool find_only, bool insert_only) {
+type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name, bool find_only, bool insert_only) {
     size_t hash = djb2(v_name), idx, addressing = 0;
     type_sym_tbl_item *tmp = NULL;
     while (addressing < TYPE_SYM_TBL_ADDRESSING) {
@@ -51,20 +51,20 @@ type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item
         }
         free(*tbl); // don't run tbl_free old items moved not copied
         *tbl = new_tbl;
-        return _type_sym_tbl_findsert(tbl, entry, group, len, v_name, find_only, insert_only); // add new item
+        return _type_sym_tbl_findsert(tbl, entry, len, v_name, find_only, insert_only); // add new item
     }
-    tmp = type_sym_tbl_item_init(group, len, v_name);
+    tmp = type_sym_tbl_item_init(len, v_name);
     *entry = tmp;
     (*tbl)->buckets[idx] = tmp;
     (*tbl)->used++;
     return TYPE_SYM_TBL_STATUS_PFX(ADDED);
 }
 
-extern inline type_sym_tbl_status type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, var_group group, size_t len, const char *const v_name);
+extern inline type_sym_tbl_status type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name);
 
-extern inline type_sym_tbl_status type_sym_tbl_find(type_sym_tbl **tbl, type_sym_tbl_item **entry, var_group group, size_t len, const char *const v_name);
+extern inline type_sym_tbl_status type_sym_tbl_find(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name);
 
-extern inline type_sym_tbl_status type_sym_tbl_insert(type_sym_tbl **tbl, type_sym_tbl_item **entry, var_group group, size_t len, const char *const v_name);
+extern inline type_sym_tbl_status type_sym_tbl_insert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name);
 
 extern inline type *type_init(type_name name, type_data data);
 
