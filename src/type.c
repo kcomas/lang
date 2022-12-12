@@ -29,7 +29,7 @@ type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item
         *entry = tmp;
         return TYPE_SYM_TBL_STATUS_PFX(FOUND);
     }
-    if (tmp == NULL && addressing == TYPE_SYM_TBL_ADDRESSING) {
+    if (tmp == NULL && addressing >= TYPE_SYM_TBL_ADDRESSING) {
         // resize and rebuild tbl
         type_sym_tbl *new_tbl = type_sym_tbl_init((*tbl)->size * TYPE_SYM_TBL_RESIZE);
         for (size_t i = 0; i < (*tbl)->size; i++) {
@@ -44,7 +44,7 @@ type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item
                     break;
                 }
             }
-            if (addressing == TYPE_SYM_TBL_ADDRESSING) {
+            if (addressing >= TYPE_SYM_TBL_ADDRESSING) {
                 free(new_tbl); // delete new tbl
                 return TYPE_SYM_TBL_STATUS_PFX(ADDRESSING_FALIED);
             }

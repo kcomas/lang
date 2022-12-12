@@ -2,7 +2,7 @@
 #include "test.h"
 #include "../src/type.h"
 
-TEST(sym_tbl_init_free) {
+TEST(sym_tbl_init_free) { // valgrind test
     type_sym_tbl *tbl = type_sym_tbl_init(TYPE_SYM_TBL_BUCKETS);
     type_sym_tbl_free(tbl);
 }

@@ -211,7 +211,6 @@ inline void parser_state_init(parser_state *const ps, char *const str) {
     ps->str = str;
 }
 
-// parent fn holds found node and initialized to NULL for both public parser fns
 typedef parser_status parser_parse(parser_state *const ps, parser_node **node);
 
 parser_status parser_parse_expr(parser_state *const ps, parser_node **node);

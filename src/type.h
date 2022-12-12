@@ -9,7 +9,7 @@
 
 typedef enum {
     TYPE_NAME_PFX(UNKNOWN),
-    TYPE_NAME_PFX(U0), // void, internal use only
+    TYPE_NAME_PFX(U0), // void
     TYPE_NAME_PFX(U1), // bool
     TYPE_NAME_PFX(U8),
     TYPE_NAME_PFX(U16),
@@ -22,6 +22,7 @@ typedef enum {
     TYPE_NAME_PFX(F32),
     TYPE_NAME_PFX(F64),
     TYPE_NAME_PFX(STR),
+    TYPE_NAME_PFX(MOD),
     TYPE_NAME_PFX(FN)
 } type_name;
 
@@ -36,7 +37,7 @@ typedef struct {
 } type_sym_tbl_item;
 
 inline type_sym_tbl_item *type_sym_tbl_item_init(size_t len, const char *const v_name) {
-    type_sym_tbl_item *item = calloc(1, sizeof(type_sym_tbl_item) + sizeof(char) * len + sizeof(char));
+    type_sym_tbl_item *item = calloc(1, sizeof(type_sym_tbl_item) + sizeof(char) * len + sizeof(char)); // null byte
     item->len = len;
     strcpy(item->v_name, v_name);
     return item;
@@ -101,9 +102,9 @@ inline type_sym_tbl_status type_sym_tbl_insert(type_sym_tbl **tbl, type_sym_tbl_
 }
 
 typedef struct {
-    size_t exports_len;
+    size_t len; // exports len
     type_sym_tbl *tbl;
-    type_sym_tbl_item *exports;
+    type_sym_tbl_item *exports[];
 } type_mod;
 
 #define PARENT_TYPE_PFX(NAME) PARENT_TYPE_PFX_##NAME
@@ -114,7 +115,8 @@ typedef enum {
 } parent_type;
 
 typedef struct _type_fn {
-    size_t args_len;
+    parent_type pt;
+    size_t len; // args len
     type *ret;
     union {
         type_mod *mod;
@@ -125,6 +127,7 @@ typedef struct _type_fn {
 } type_fn;
 
 typedef union {
+    type_mod *mod;
     type_fn *fn;
 } type_data;
 
