@@ -71,7 +71,7 @@ static bool verify_list(const parser_node_list *restrict const a, const parser_n
 
 static bool verify_expr(const parser_node *restrict const a, const parser_node *restrict const b) {
     if (a == NULL && b == NULL) return true;
-    if (a->type != b->type) return false;
+    if (a == NULL || b == NULL || a->type != b->type) return false;
     if (parser_node_type_is_buf(a->type)) return a->data.buf->len == b->data.buf->len && strcmp(a->data.buf->buf, b->data.buf->buf) == 0;
     else if (parser_node_type_is_type(a->type)) return true;
     else if (a->type == PARSER_NODE_TYPE_PFX(FN)) return verify_list(&a->data.fn->args, &b->data.fn->args) && verify_list(&a->data.fn->body, &b->data.fn->body);
