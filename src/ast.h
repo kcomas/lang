@@ -55,6 +55,14 @@ typedef struct _ast_node {
     ast_data data;
 } ast_node;
 
+inline ast_node *ast_node_init(ast_type a_type, type *t_type, ast_data data) {
+    ast_node *an = calloc(1, sizeof(ast_node));
+    an->a_type = a_type;
+    an->t_type = t_type;
+    an->data = data;
+    return an;
+}
+
 #define AST_STATUS_PFX(NAME) AST_TYPE_PFX_##NAME
 
 typedef enum {
@@ -74,4 +82,4 @@ inline ast_status ast_state_init(ast_state *const as, parser_parse *const parser
     return AST_STATUS_PFX(OK);
 }
 
-ast_status ast_expr(type *const fn_mod, parser_node *const p_node, ast_node **a_node);
+ast_status ast_expr(type *const fn_mod, parser_node *const p_node, ast_node **a_node, type **parent);

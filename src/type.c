@@ -66,9 +66,15 @@ extern inline type_sym_tbl_status type_sym_tbl_find(type_sym_tbl **tbl, type_sym
 
 extern inline type_sym_tbl_status type_sym_tbl_insert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name);
 
+extern inline type_mod *type_mod_init(size_t size);
+
+extern inline void type_mod_free(type_mod *mod);
+
 extern inline type *type_init(type_name name, type_data data);
 
 void type_free(type *t) {
     // TODO free different types
     free(t);
 }
+
+extern inline type_sym_tbl *type_get_sym_tbl(type *const t);

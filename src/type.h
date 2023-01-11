@@ -22,8 +22,8 @@ typedef enum {
     TYPE_NAME_PFX(F32),
     TYPE_NAME_PFX(F64),
     TYPE_NAME_PFX(STR),
-    TYPE_NAME_PFX(MOD),
-    TYPE_NAME_PFX(FN)
+    TYPE_NAME_PFX(FN),
+    TYPE_NAME_PFX(MOD)
 } type_name;
 
 typedef struct _type type;
@@ -102,10 +102,20 @@ inline type_sym_tbl_status type_sym_tbl_insert(type_sym_tbl **tbl, type_sym_tbl_
 }
 
 typedef struct {
-    size_t len; // exports len
-    type_sym_tbl *tbl;
-    type_sym_tbl_item *exports[];
+    type_sym_tbl *tbl, *exports; // exports is only crated on first export found, imports are put into the tbl
 } type_mod;
+
+inline type_mod *type_mod_init(size_t size) {
+    type_mod *mod = calloc(1, sizeof(type_mod));
+    mod->tbl = type_sym_tbl_init(size);
+    return mod;
+}
+
+inline void type_mod_free(type_mod *mod) {
+    type_sym_tbl_free(mod->tbl);
+    if (mod->exports != NULL) type_sym_tbl_free(mod->exports);
+    free(mod);
+}
 
 #define PARENT_TYPE_PFX(NAME) PARENT_TYPE_PFX_##NAME
 
@@ -132,6 +142,7 @@ typedef union {
 } type_data;
 
 typedef struct _type {
+    bool yes; // is type and not a maybe
     type_name name;
     type_data data;
 } type;
@@ -141,4 +152,15 @@ inline type *type_init(type_name name, type_data data) {
     t->name = name;
     t->data = data;
     return t;
+}
+
+inline type_sym_tbl *type_get_sym_tbl(type *const t) {
+    switch (t->name) {
+        case TYPE_NAME_PFX(FN):
+            return t->data.fn->tbl;
+        case TYPE_NAME_PFX(MOD):
+            return t->data.mod->tbl;
+        default:
+            return NULL;
+    }
 }
