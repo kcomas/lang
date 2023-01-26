@@ -28,8 +28,6 @@ type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item
     if (tmp != NULL && insert_only) return TYPE_SYM_TBL_STATUS_PFX(ALLREADY_EXISTS);
     if (tmp != NULL) {
         *entry = tmp;
-        // inc rc
-        (*entry)->v_type->rc++;
         return TYPE_SYM_TBL_STATUS_PFX(FOUND);
     }
     if (tmp == NULL && addressing >= TYPE_SYM_TBL_ADDRESSING) {
@@ -78,8 +76,7 @@ extern inline type *type_init(type_name name, type_data data);
 extern inline type* type_cpy(type *t);
 
 void type_free(type *t) {
-    t->rc--;
-    if (t->rc > 0) return;
+    if (--t->rc > 0) return;
     // TODO free different types
     free(t);
 }

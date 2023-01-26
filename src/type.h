@@ -32,7 +32,7 @@ void type_free(type *t);
 
 typedef struct {
     size_t len; // does not inc null term
-    type *v_type;
+    type *v_type; // vars are cleared all at once not need to update rc
     char v_name[]; // must be null termed
 } type_sym_tbl_item;
 
