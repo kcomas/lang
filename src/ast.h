@@ -8,10 +8,13 @@
 #define AST_TYPE_PFX(NAME) AST_TYPE_PFX_##NAME
 
 typedef enum {
+    AST_TYPE_PFX(TYPE),
     AST_TYPE_PFX(VAR),
     AST_TYPE_PFX(INT),
     AST_TYPE_PFX(STR),
     AST_TYPE_PFX(LIST),
+    AST_TYPE_PFX(ASSIGN),
+    AST_TYPE_PFX(DEFINE),
     AST_TYPE_PFX(ADD),
     AST_TYPE_PFX(SUB),
     AST_TYPE_PFX(MUL),
@@ -33,6 +36,7 @@ inline ast_node_list *ast_node_list_init(size_t len) {
 
 typedef struct {
     ast_node *left, *right; // t_type in the ast_node is the ops return type
+    type *t_type;
 } ast_node_op;
 
 inline ast_node_op *ast_node_op_init(void) {
@@ -40,6 +44,7 @@ inline ast_node_op *ast_node_op_init(void) {
 }
 
 typedef union {
+    type *t;
     type_sym_tbl_item *var;
     ast_node_list *list;
     ast_node_op *op;
@@ -51,14 +56,12 @@ typedef union {
 
 typedef struct _ast_node {
     ast_type a_type;
-    type *t_type;
     ast_data data;
 } ast_node;
 
-inline ast_node *ast_node_init(ast_type a_type, type *t_type, ast_data data) {
+inline ast_node *ast_node_init(ast_type a_type, ast_data data) {
     ast_node *an = calloc(1, sizeof(ast_node));
     an->a_type = a_type;
-    an->t_type = t_type;
     an->data = data;
     return an;
 }

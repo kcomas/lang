@@ -40,6 +40,7 @@ inline type_sym_tbl_item *type_sym_tbl_item_init(size_t len, const char *const v
     type_sym_tbl_item *item = calloc(1, sizeof(type_sym_tbl_item) + sizeof(char) * len + sizeof(char)); // null byte
     item->len = len;
     strcpy(item->v_name, v_name);
+    // init type after creation
     return item;
 }
 
@@ -79,6 +80,7 @@ inline void type_sym_tbl_free(type_sym_tbl *tbl) {
 #define TYPE_SYM_TBL_STATUS_PFX(NAME) TYPE_SYM_TBL_STATUS_##NAME
 
 typedef enum {
+    TYPE_SYM_TBL_STATUS_PFX(INVALID_TABLE),
     TYPE_SYM_TBL_STATUS_PFX(FOUND),
     TYPE_SYM_TBL_STATUS_PFX(ADDED),
     TYPE_SYM_TBL_STATUS_PFX(NOT_FOUND),
@@ -142,15 +144,21 @@ typedef union {
 } type_data;
 
 typedef struct _type {
-    bool yes; // is type and not a maybe
     type_name name;
+    size_t rc; // use rc for fast cmp
     type_data data;
 } type;
 
 inline type *type_init(type_name name, type_data data) {
     type *t = calloc(1, sizeof(type));
     t->name = name;
+    t->rc = 1;
     t->data = data;
+    return t;
+}
+
+inline type* type_cpy(type *t) {
+    t->rc++;
     return t;
 }
 

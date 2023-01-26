@@ -17,6 +17,7 @@ static size_t djb2(const char *str) {
 }
 
 type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name, bool find_only, bool insert_only) {
+    if (*tbl == NULL) return TYPE_SYM_TBL_STATUS_PFX(INVALID_TABLE);
     size_t hash = djb2(v_name), idx, addressing = 0;
     type_sym_tbl_item *tmp = NULL;
     while (addressing < TYPE_SYM_TBL_ADDRESSING) {
@@ -27,6 +28,8 @@ type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item
     if (tmp != NULL && insert_only) return TYPE_SYM_TBL_STATUS_PFX(ALLREADY_EXISTS);
     if (tmp != NULL) {
         *entry = tmp;
+        // inc rc
+        (*entry)->v_type->rc++;
         return TYPE_SYM_TBL_STATUS_PFX(FOUND);
     }
     if (tmp == NULL && addressing >= TYPE_SYM_TBL_ADDRESSING) {
@@ -53,9 +56,9 @@ type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item
         *tbl = new_tbl;
         return _type_sym_tbl_findsert(tbl, entry, len, v_name, find_only, insert_only); // add new item
     }
-    tmp = type_sym_tbl_item_init(len, v_name);
-    *entry = tmp;
-    (*tbl)->buckets[idx] = tmp;
+    *entry = type_sym_tbl_item_init(len, v_name);
+    (*entry)->v_type = type_init(TYPE_NAME_PFX(UNKNOWN), (type_data) {});
+    (*tbl)->buckets[idx] = *entry;
     (*tbl)->used++;
     return TYPE_SYM_TBL_STATUS_PFX(ADDED);
 }
@@ -72,7 +75,11 @@ extern inline void type_mod_free(type_mod *mod);
 
 extern inline type *type_init(type_name name, type_data data);
 
+extern inline type* type_cpy(type *t);
+
 void type_free(type *t) {
+    t->rc--;
+    if (t->rc > 0) return;
     // TODO free different types
     free(t);
 }
