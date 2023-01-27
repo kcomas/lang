@@ -56,12 +56,14 @@ typedef union {
 
 typedef struct _ast_node {
     ast_type a_type;
+    parser_node *p_node; // p_node has line and char info, not freed here
     ast_data data;
 } ast_node;
 
-inline ast_node *ast_node_init(ast_type a_type, ast_data data) {
+inline ast_node *ast_node_init(ast_type a_type, parser_node *p_node, ast_data data) {
     ast_node *an = calloc(1, sizeof(ast_node));
     an->a_type = a_type;
+    an->p_node = p_node;
     an->data = data;
     return an;
 }
@@ -76,7 +78,7 @@ typedef enum {
 typedef struct {
     parser_status p_status;
     parser_state p_state;
-    parser_node *p_node;
+    parser_node *p_node; // all parser nodes are freed from this node
 } ast_state;
 
 inline ast_status ast_state_init(ast_state *const as, parser_parse *const parser_fn, char *const str) {
@@ -85,4 +87,5 @@ inline ast_status ast_state_init(ast_state *const as, parser_parse *const parser
     return AST_STATUS_PFX(OK);
 }
 
-ast_status ast_expr(type *const fn_mod, parser_node *const p_node, ast_node **a_node, type **parent);
+// a_node must be NULL and parent must be a type UNKNOWN at start
+ast_status ast_expr(type *const fn_mod, parser_node *const p_node, ast_node **a_node, type *const parent);

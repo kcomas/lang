@@ -89,18 +89,18 @@ typedef enum {
 } type_sym_tbl_status;
 
 // entry is the found item or the inserted item
-type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name, bool find_only, bool insert_only);
+type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name, type *const t, bool find_only, bool insert_only);
 
-inline type_sym_tbl_status type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name) {
-    return _type_sym_tbl_findsert(tbl, entry, len, v_name, false, false);
+inline type_sym_tbl_status type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name, type *const t) {
+    return _type_sym_tbl_findsert(tbl, entry, len, v_name, t, false, false);
 }
 
-inline type_sym_tbl_status type_sym_tbl_find(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name) {
-    return _type_sym_tbl_findsert(tbl, entry, len, v_name, true, false);
+inline type_sym_tbl_status type_sym_tbl_find(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name, type *const t) {
+    return _type_sym_tbl_findsert(tbl, entry, len, v_name, t, true, false);
 }
 
-inline type_sym_tbl_status type_sym_tbl_insert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name) {
-    return _type_sym_tbl_findsert(tbl, entry, len, v_name, false, true);
+inline type_sym_tbl_status type_sym_tbl_insert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name, type *const t) {
+    return _type_sym_tbl_findsert(tbl, entry, len, v_name, t, false, true);
 }
 
 typedef struct {
@@ -157,7 +157,7 @@ inline type *type_init(type_name name, type_data data) {
     return t;
 }
 
-inline type* type_cpy(type *t) {
+inline type* type_cpy(type *const t) {
     t->rc++;
     return t;
 }

@@ -16,7 +16,7 @@ static size_t djb2(const char *str) {
     return hash;
 }
 
-type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name, bool find_only, bool insert_only) {
+type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name, type *const t, bool find_only, bool insert_only) {
     if (*tbl == NULL) return TYPE_SYM_TBL_STATUS_PFX(INVALID_TABLE);
     size_t hash = djb2(v_name), idx, addressing = 0;
     type_sym_tbl_item *tmp = NULL;
@@ -52,20 +52,20 @@ type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item
         }
         free(*tbl); // don't run tbl_free old items moved not copied
         *tbl = new_tbl;
-        return _type_sym_tbl_findsert(tbl, entry, len, v_name, find_only, insert_only); // add new item
+        return _type_sym_tbl_findsert(tbl, entry, len, v_name, t, find_only, insert_only); // add new item
     }
     *entry = type_sym_tbl_item_init(len, v_name);
-    (*entry)->v_type = type_init(TYPE_NAME_PFX(UNKNOWN), (type_data) {});
+    (*entry)->v_type = type_cpy(t);
     (*tbl)->buckets[idx] = *entry;
     (*tbl)->used++;
     return TYPE_SYM_TBL_STATUS_PFX(ADDED);
 }
 
-extern inline type_sym_tbl_status type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name);
+extern inline type_sym_tbl_status type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name, type *const t);
 
-extern inline type_sym_tbl_status type_sym_tbl_find(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name);
+extern inline type_sym_tbl_status type_sym_tbl_find(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name, type *const t);
 
-extern inline type_sym_tbl_status type_sym_tbl_insert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name);
+extern inline type_sym_tbl_status type_sym_tbl_insert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name, type *const t);
 
 extern inline type_mod *type_mod_init(size_t size);
 
