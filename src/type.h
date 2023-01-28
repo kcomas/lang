@@ -80,13 +80,16 @@ inline void type_sym_tbl_free(type_sym_tbl *tbl) {
 #define TYPE_SYM_TBL_STATUS_PFX(NAME) TYPE_SYM_TBL_STATUS_##NAME
 
 typedef enum {
-    TYPE_SYM_TBL_STATUS_PFX(INVALID_TABLE),
     TYPE_SYM_TBL_STATUS_PFX(FOUND),
     TYPE_SYM_TBL_STATUS_PFX(ADDED),
     TYPE_SYM_TBL_STATUS_PFX(NOT_FOUND),
     TYPE_SYM_TBL_STATUS_PFX(ALLREADY_EXISTS),
     TYPE_SYM_TBL_STATUS_PFX(ADDRESSING_FALIED)
 } type_sym_tbl_status;
+
+inline bool type_sym_tble_status_ok(type_sym_tbl_status s) {
+    return s == TYPE_SYM_TBL_STATUS_PFX(FOUND) || s == TYPE_SYM_TBL_STATUS_PFX(ADDED);
+}
 
 // entry is the found item or the inserted item
 type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name, type *const t, bool find_only, bool insert_only);

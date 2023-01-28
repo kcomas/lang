@@ -9,6 +9,8 @@ extern inline type_sym_tbl *type_sym_tbl_init(size_t size);
 
 extern inline void type_sym_tbl_free(type_sym_tbl *tbl);
 
+extern inline bool type_sym_tble_status_ok(type_sym_tbl_status s);
+
 static size_t djb2(const char *str) {
     size_t hash = 5831;
     char c;
@@ -17,7 +19,6 @@ static size_t djb2(const char *str) {
 }
 
 type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item **entry, size_t len, const char *const v_name, type *const t, bool find_only, bool insert_only) {
-    if (*tbl == NULL) return TYPE_SYM_TBL_STATUS_PFX(INVALID_TABLE);
     size_t hash = djb2(v_name), idx, addressing = 0;
     type_sym_tbl_item *tmp = NULL;
     while (addressing < TYPE_SYM_TBL_ADDRESSING) {
@@ -46,7 +47,7 @@ type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item
                 }
             }
             if (addressing >= TYPE_SYM_TBL_ADDRESSING) {
-                free(new_tbl); // delete new tbl
+                free(new_tbl); // delete new tbl not copied items
                 return TYPE_SYM_TBL_STATUS_PFX(ADDRESSING_FALIED);
             }
         }
