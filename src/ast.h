@@ -88,7 +88,7 @@ typedef struct {
 inline ast_status ast_state_init(ast_state *const as, parser_parse *const parser_fn, char *const str) {
     parser_state_init(&as->p_state, str);
     as->p_node = NULL;
-    as->t_poll = NULL;
+    as->t_pool = NULL;
     if ((as->p_status = parser_fn(&as->p_state, &as->p_node)) != PARSER_STATUS_PFX(OK)) return AST_STATUS_PFX(PARSER_FAIL);
     return AST_STATUS_PFX(OK);
 }
@@ -97,7 +97,7 @@ inline void ast_state_add_type(ast_state *const as, type *t) {
     if (as->t_pool == NULL) {
         as->t_pool = t;
     } else {
-       type tmp = t;
+       type *tmp = t;
        while (tmp->next != NULL) tmp = tmp->next;
        tmp->next = t;
     }
