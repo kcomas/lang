@@ -82,17 +82,35 @@ typedef struct {
     parser_status p_status;
     parser_state p_state;
     parser_node *p_node; // all parser nodes are freed from this node
+    type *t_pool; // head of list of all types for freeing
 } ast_state;
 
 inline ast_status ast_state_init(ast_state *const as, parser_parse *const parser_fn, char *const str) {
     parser_state_init(&as->p_state, str);
     as->p_node = NULL;
+    as->t_poll = NULL;
     if ((as->p_status = parser_fn(&as->p_state, &as->p_node)) != PARSER_STATUS_PFX(OK)) return AST_STATUS_PFX(PARSER_FAIL);
     return AST_STATUS_PFX(OK);
 }
 
+inline void ast_state_add_type(ast_state *const as, type *t) {
+    if (as->t_pool == NULL) {
+        as->t_pool = t;
+    } else {
+       type tmp = t;
+       while (tmp->next != NULL) tmp = tmp->next;
+       tmp->next = t;
+    }
+}
+
 inline void ast_state_free(ast_state *const as) {
     parser_node_free(as->p_node);
+    type *head = as->t_pool;
+    while (head != NULL) {
+        type *tmp = head;
+        tmp = head->next;
+        free(tmp);
+    }
 }
 
 // a_node must be NULL and parent must be a type UNKNOWN at start

@@ -56,7 +56,7 @@ type_sym_tbl_status _type_sym_tbl_findsert(type_sym_tbl **tbl, type_sym_tbl_item
         return _type_sym_tbl_findsert(tbl, entry, len, v_name, t, find_only, insert_only); // add new item
     }
     *entry = type_sym_tbl_item_init(len, v_name);
-    (*entry)->v_type = type_cpy(t);
+    (*entry)->v_type = t;
     (*tbl)->buckets[idx] = *entry;
     (*tbl)->used++;
     return TYPE_SYM_TBL_STATUS_PFX(ADDED);
@@ -74,10 +74,7 @@ extern inline void type_mod_free(type_mod *mod);
 
 extern inline type *type_init(type_name name, type_data data);
 
-extern inline type* type_cpy(type *t);
-
 void type_free(type *t) {
-    if (--t->rc > 0) return;
     // TODO free different types
     free(t);
 }

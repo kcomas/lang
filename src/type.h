@@ -32,7 +32,7 @@ void type_free(type *t);
 
 typedef struct {
     size_t len; // does not inc null term
-    type *v_type; // vars are cleared all at once not need to update rc
+    type *v_type; // vars are cleared all at once and not here
     char v_name[]; // must be null termed
 } type_sym_tbl_item;
 
@@ -45,7 +45,6 @@ inline type_sym_tbl_item *type_sym_tbl_item_init(size_t len, const char *const v
 }
 
 inline void type_sym_tbl_item_free(type_sym_tbl_item *item) {
-    type_free(item->v_type);
     free(item);
 }
 
@@ -148,20 +147,14 @@ typedef union {
 
 typedef struct _type {
     type_name name;
-    size_t rc; // use rc for fast cmp
     type_data data;
+    type *next;
 } type;
 
 inline type *type_init(type_name name, type_data data) {
     type *t = calloc(1, sizeof(type));
     t->name = name;
-    t->rc = 1;
     t->data = data;
-    return t;
-}
-
-inline type* type_cpy(type *const t) {
-    t->rc++;
     return t;
 }
 
